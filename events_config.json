@@ -1,0 +1,1159 @@
+{
+  "globalEvents": {
+    "good": [
+      {
+        "name": "能源技術突破",
+        "description": "全球科學家聯合研發出革命性清潔能源技術，大幅降低能源成本",
+        "effects": {
+          "gdp": 1.5,
+          "confidence": 15,
+          "inflation": -0.8
+        }
+      },
+      {
+        "name": "全球貿易協議簽署",
+        "description": "主要經濟體簽署新的全球貿易協議，大幅降低貿易壁壘",
+        "effects": {
+          "gdp": 2.0,
+          "confidence": 12,
+          "inflation": -0.5
+        }
+      },
+      {
+        "name": "永續發展共識",
+        "description": "各國對永續發展目標達成史無前例的共識，啟動大規模綠色投資",
+        "effects": {
+          "gdp": 1.2,
+          "confidence": 18,
+          "deficit": -0.5
+        }
+      },
+      {
+        "name": "醫療技術重大突破",
+        "description": "國際合作研發出治療重大疾病的新療法，全球健康水準提升",
+        "effects": {
+          "gdp": 1.0,
+          "confidence": 20,
+          "unemployment": -0.3
+        }
+      },
+      {
+        "name": "太空探索成功",
+        "description": "國際太空合作計畫取得重大突破，開啟太空經濟新時代",
+        "effects": {
+          "gdp": 1.3,
+          "confidence": 15
+        }
+      },
+      {
+        "name": "人工智慧普及",
+        "description": "AI技術全面普及，大幅提升全球生產效率",
+        "effects": {
+          "gdp": 2.2,
+          "confidence": 10,
+          "unemployment": 0.5,
+          "inflation": -1.0
+        }
+      }
+    ],
+    "bad": [
+      {
+        "name": "全球疫情爆發",
+        "description": "新型傳染病在全球蔓延，各國實施封鎖措施",
+        "effects": {
+          "gdp": -3.0,
+          "confidence": -25,
+          "unemployment": 1.5,
+          "deficit": 2.0
+        }
+      },
+      {
+        "name": "全球金融海嘯",
+        "description": "主要金融中心爆發系統性風險，全球股市暴跌",
+        "effects": {
+          "gdp": -4.0,
+          "confidence": -35,
+          "unemployment": 2.0,
+          "deficit": 3.0
+        }
+      },
+      {
+        "name": "國際戰爭爆發",
+        "description": "大國間爆發軍事衝突，全球供應鏈受到嚴重衝擊",
+        "effects": {
+          "gdp": -2.5,
+          "confidence": -30,
+          "inflation": 2.0,
+          "deficit": 2.5
+        }
+      },
+      {
+        "name": "貿易壁壘再興",
+        "description": "主要經濟體重新築起貿易壁壘，保護主義盛行",
+        "effects": {
+          "gdp": -1.8,
+          "confidence": -15,
+          "inflation": 1.2
+        }
+      },
+      {
+        "name": "氣候災難",
+        "description": "極端氣候事件頻發，全球農業和基礎設施受到重創",
+        "effects": {
+          "gdp": -2.0,
+          "confidence": -20,
+          "inflation": 1.5,
+          "deficit": 1.5
+        }
+      },
+      {
+        "name": "網路安全危機",
+        "description": "大規模網路攻擊癱瘓全球關鍵基礎設施",
+        "effects": {
+          "gdp": -1.5,
+          "confidence": -18,
+          "deficit": 1.0
+        }
+      },
+      {
+        "name": "能源危機",
+        "description": "主要能源產區供應中斷，全球能源價格飆升",
+        "effects": {
+          "gdp": -2.2,
+          "confidence": -22,
+          "inflation": 2.5
+        }
+      }
+    ]
+  },
+  "countryEvents": {
+    "中國": {
+      "goodNewsRatio": 0.25,
+      "events": {
+        "good": [
+          {
+            "name": "科技技術突破",
+            "description": "在關鍵技術領域取得重大突破，提升國際競爭力",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 10
+            },
+            "globalEffects": {
+              "gdp": 0.5
+            }
+          },
+          {
+            "name": "成功竊取商業機密",
+            "description": "通過各種管道獲得先進技術，縮短研發時間",
+            "effects": {
+              "gdp": 1.5
+            },
+            "globalEffects": {
+              "gdp": -0.5
+            }
+          },
+          {
+            "name": "一帶一路重大進展",
+            "description": "一帶一路倡議取得重大進展，國際影響力提升",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 8
+            }
+          },
+          {
+            "name": "數位支付技術輸出成功",
+            "description": "數位支付技術成功輸出海外，提升金融科技實力",
+            "effects": {
+              "gdp": 1.0,
+              "inflation": -0.3
+            }
+          },
+          {
+            "name": "新能源汽車出口爆發",
+            "description": "新能源汽車在國際市場大獲成功，出口量暴增",
+            "effects": {
+              "gdp": 1.5,
+              "unemployment": -0.5
+            }
+          },
+          {
+            "name": "成功吸引外商投資",
+            "description": "政策調整成功吸引大量外商直接投資",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 8
+            }
+          },
+          {
+            "name": "房地產新模式成功",
+            "description": "房地產市場改革取得成效，建立可持續發展模式",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 12,
+              "deficit": -1.0
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "政府打房政策",
+            "description": "嚴厲的房地產調控政策重創房地產業",
+            "effects": {
+              "gdp": -2.0,
+              "confidence": -15,
+              "unemployment": 1.0
+            }
+          },
+          {
+            "name": "被徵反傾銷稅",
+            "description": "主要貿易夥伴對中國產品徵收反傾銷稅",
+            "effects": {
+              "gdp": -1.5,
+              "inflation": 1.0,
+              "confidence": -8
+            }
+          },
+          {
+            "name": "國內詐騙橫行",
+            "description": "各種詐騙案件頻發，嚴重損害社會信任",
+            "effects": {
+              "confidence": -20,
+              "gdp": -0.5
+            }
+          },
+          {
+            "name": "年輕人躺平風氣蔓延",
+            "description": "年輕人躺平風氣蔓延，勞動參與率下降",
+            "effects": {
+              "gdp": -1.0,
+              "unemployment": 0.8,
+              "confidence": -12
+            }
+          },
+          {
+            "name": "房地產泡沫破裂",
+            "description": "房地產市場崩盤，引發系統性金融風險",
+            "effects": {
+              "gdp": -3.0,
+              "confidence": -25,
+              "deficit": 2.0
+            }
+          },
+          {
+            "name": "地方債務危機",
+            "description": "地方政府債務違約，引發財政危機",
+            "effects": {
+              "deficit": 3.0,
+              "confidence": -15,
+              "gdp": -1.0
+            }
+          },
+          {
+            "name": "環保限產政策",
+            "description": "嚴格的環保政策導致大量工廠停產",
+            "effects": {
+              "gdp": -1.5,
+              "unemployment": 0.5,
+              "inflation": 0.8
+            }
+          },
+          {
+            "name": "貿易夥伴制裁",
+            "description": "重要貿易夥伴實施經濟制裁",
+            "effects": {
+              "gdp": -2.0,
+              "inflation": 1.5,
+              "confidence": -10
+            }
+          },
+          {
+            "name": "人口老齡化加劇",
+            "description": "人口老齡化問題惡化，勞動力短缺",
+            "effects": {
+              "gdp": -0.8,
+              "deficit": 1.5
+            }
+          }
+        ]
+      }
+    },
+    "日本": {
+      "goodNewsRatio": 0.75,
+      "events": {
+        "good": [
+          {
+            "name": "旅遊人數大幅增加",
+            "description": "外國遊客數量創歷史新高，旅遊業蓬勃發展",
+            "effects": {
+              "gdp": 1.5,
+              "inflation": 0.8,
+              "confidence": 10
+            }
+          },
+          {
+            "name": "成功舉辦奧運會",
+            "description": "奧運會成功舉辦，提升國際形象和經濟效益",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 20,
+              "inflation": 1.0
+            }
+          },
+          {
+            "name": "大舉吸納投資移民",
+            "description": "新的移民政策成功吸引高技能移民",
+            "effects": {
+              "gdp": 1.0,
+              "unemployment": -0.8,
+              "confidence": 8
+            }
+          },
+          {
+            "name": "日圓貶值刺激出口",
+            "description": "日圓貶值提升出口競爭力，製造業復甦",
+            "effects": {
+              "gdp": 1.8,
+              "inflation": 1.2,
+              "unemployment": -0.5
+            }
+          },
+          {
+            "name": "機器人技術出口成功",
+            "description": "先進機器人技術在國際市場大獲成功",
+            "effects": {
+              "gdp": 1.5,
+              "confidence": 12
+            }
+          },
+          {
+            "name": "動漫文化全球輸出",
+            "description": "日本動漫文化在全球持續擴張影響力",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 15,
+              "inflation": 0.5
+            }
+          },
+          {
+            "name": "氫能技術商業化成功",
+            "description": "氫能技術實現商業化突破，引領能源轉型",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 18
+            },
+            "globalEffects": {
+              "inflation": -0.2
+            }
+          },
+          {
+            "name": "老齡化社會創新模式",
+            "description": "成功開發老齡化社會的創新解決方案",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 20,
+              "unemployment": -1.0
+            }
+          },
+          {
+            "name": "日本料理申遺成功",
+            "description": "日本料理成功申請世界文化遺產",
+            "effects": {
+              "confidence": 10,
+              "gdp": 0.5
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "地震災害",
+            "description": "強烈地震造成重大人員傷亡和經濟損失",
+            "effects": {
+              "gdp": -2.5,
+              "confidence": -20,
+              "deficit": 3.0
+            }
+          },
+          {
+            "name": "海嘯襲擊",
+            "description": "海嘯襲擊沿海地區，造成嚴重破壞",
+            "effects": {
+              "gdp": -3.0,
+              "confidence": -25,
+              "deficit": 4.0
+            }
+          },
+          {
+            "name": "核電廠意外",
+            "description": "核電廠發生安全事故，引發全國恐慌",
+            "effects": {
+              "confidence": -30,
+              "gdp": -2.0,
+              "inflation": 1.5
+            }
+          },
+          {
+            "name": "老齡化嚴重，長照需求激增",
+            "description": "人口老齡化加劇，長期照護需求急劇增加",
+            "effects": {
+              "deficit": 2.5,
+              "gdp": -1.0,
+              "confidence": -10
+            }
+          },
+          {
+            "name": "黑毛和牛大量染病死亡",
+            "description": "口蹄疫等疾病導致優質和牛大量死亡",
+            "effects": {
+              "gdp": -1.2,
+              "confidence": -8,
+              "inflation": 0.5
+            }
+          },
+          {
+            "name": "中國反日風氣增加，旅遊銳減",
+            "description": "中日關係惡化，中國遊客大幅減少",
+            "effects": {
+              "gdp": -1.5,
+              "confidence": -12,
+              "unemployment": 0.3
+            }
+          },
+          {
+            "name": "少子化問題惡化",
+            "description": "出生率持續下降，未來勞動力嚴重不足",
+            "effects": {
+              "gdp": -0.8,
+              "confidence": -15
+            }
+          },
+          {
+            "name": "企業外移至東南亞",
+            "description": "製造業企業大舉遷移至成本更低的東南亞",
+            "effects": {
+              "gdp": -1.8,
+              "unemployment": 1.0,
+              "confidence": -10
+            }
+          },
+          {
+            "name": "日圓過度升值傷害出口",
+            "description": "日圓急劇升值削弱出口競爭力",
+            "effects": {
+              "gdp": -2.0,
+              "unemployment": 0.8,
+              "inflation": -0.5
+            }
+          },
+          {
+            "name": "福島核廢水爭議擴大",
+            "description": "核廢水排放爭議擴大，國際形象受損",
+            "effects": {
+              "confidence": -18,
+              "gdp": -1.0
+            }
+          },
+          {
+            "name": "傳統製造業競爭力下滑",
+            "description": "面對新興經濟體競爭，傳統製造業衰退",
+            "effects": {
+              "gdp": -1.5,
+              "unemployment": 0.5,
+              "confidence": -8
+            }
+          }
+        ]
+      }
+    },
+    "美國": {
+      "goodNewsRatio": 0.6,
+      "events": {
+        "good": [
+          {
+            "name": "研發出革命性電子產品",
+            "description": "矽谷巨頭推出劃時代電子產品，引領全球科技潮流",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 15
+            },
+            "globalEffects": {
+              "gdp": 0.3
+            }
+          },
+          {
+            "name": "美股持續創新高",
+            "description": "股市持續上漲，吸引全球資金流入",
+            "effects": {
+              "confidence": 20,
+              "gdp": 1.5
+            }
+          },
+          {
+            "name": "反恐戰爭取得重大勝利",
+            "description": "在反恐戰爭中取得決定性勝利，國際威望提升",
+            "effects": {
+              "confidence": 18,
+              "deficit": -1.0
+            }
+          },
+          {
+            "name": "發現大型頁岩油田",
+            "description": "發現大型頁岩油田，實現能源獨立",
+            "effects": {
+              "gdp": 1.8,
+              "inflation": -1.0
+            }
+          },
+          {
+            "name": "太空探索重大突破",
+            "description": "NASA在太空探索領域取得重大突破",
+            "effects": {
+              "confidence": 25,
+              "gdp": 1.0
+            }
+          },
+          {
+            "name": "矽谷獨角獸企業爆發",
+            "description": "矽谷新創企業蓬勃發展，創新生態系統強化",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 12
+            },
+            "globalEffects": {
+              "gdp": 0.2
+            }
+          },
+          {
+            "name": "好萊塢電影全球大賣",
+            "description": "好萊塢電影在全球市場大獲成功，文化影響力擴張",
+            "effects": {
+              "gdp": 1.0,
+              "confidence": 10
+            }
+          },
+          {
+            "name": "美元升值吸引資金",
+            "description": "美元強勢吸引全球資金流入",
+            "effects": {
+              "inflation": -0.8,
+              "confidence": 8
+            }
+          },
+          {
+            "name": "醫療技術突破",
+            "description": "在醫療技術領域取得重大突破",
+            "effects": {
+              "gdp": 1.5,
+              "confidence": 20
+            },
+            "globalEffects": {
+              "confidence": 5
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "恐怖攻擊事件",
+            "description": "國內發生重大恐怖攻擊事件，社會陷入恐慌",
+            "effects": {
+              "confidence": -25,
+              "gdp": -1.5,
+              "deficit": 2.0
+            }
+          },
+          {
+            "name": "總統遭暗殺未遂",
+            "description": "總統遭遇暗殺未遂，政治體系受到衝擊",
+            "effects": {
+              "confidence": -30,
+              "gdp": -2.0
+            }
+          },
+          {
+            "name": "大選政治分裂加劇",
+            "description": "大選期間政治分裂嚴重，政策不確定性增加",
+            "effects": {
+              "confidence": -15,
+              "gdp": -1.0
+            }
+          },
+          {
+            "name": "金融市場崩盤",
+            "description": "華爾街金融市場崩盤，引發全球連鎖反應",
+            "effects": {
+              "gdp": -3.0,
+              "confidence": -35
+            },
+            "globalEffects": {
+              "gdp": -1.0
+            }
+          },
+          {
+            "name": "自然災害(颶風/山火)",
+            "description": "大規模自然災害造成重大損失",
+            "effects": {
+              "gdp": -2.0,
+              "deficit": 2.5,
+              "confidence": -12
+            }
+          },
+          {
+            "name": "種族騷亂事件",
+            "description": "種族衝突引發大規模騷亂",
+            "effects": {
+              "confidence": -20,
+              "gdp": -1.5
+            }
+          },
+          {
+            "name": "電動車遭遇中國強勢競爭",
+            "description": "美國電動車產業面臨中國企業強勢競爭",
+            "effects": {
+              "gdp": -1.5,
+              "confidence": -10
+            }
+          },
+          {
+            "name": "NASA火箭發射失敗",
+            "description": "重要太空任務失敗，太空競爭地位受挫",
+            "effects": {
+              "confidence": -12,
+              "gdp": -0.8
+            }
+          },
+          {
+            "name": "矽谷科技泡沫破裂",
+            "description": "科技股泡沫破裂，新創生態系統受創",
+            "effects": {
+              "gdp": -2.5,
+              "confidence": -20,
+              "unemployment": 0.8
+            }
+          },
+          {
+            "name": "基礎建設老化嚴重",
+            "description": "基礎設施老化問題惡化，競爭力下滑",
+            "effects": {
+              "gdp": -1.2,
+              "deficit": 1.5
+            }
+          },
+          {
+            "name": "醫療保險系統危機",
+            "description": "醫療保險制度面臨財務危機",
+            "effects": {
+              "deficit": 2.0,
+              "confidence": -15
+            }
+          },
+          {
+            "name": "槍擊案件頻發",
+            "description": "大規模槍擊案件頻發，社會不安加劇",
+            "effects": {
+              "confidence": -18,
+              "gdp": -0.5
+            }
+          }
+        ]
+      }
+    },
+    "台灣": {
+      "goodNewsRatio": 0.5,
+      "events": {
+        "good": [
+          {
+            "name": "研發新型半導體",
+            "description": "台積電等公司成功研發新世代半導體製程",
+            "effects": {
+              "gdp": 2.5,
+              "confidence": 15
+            },
+            "globalEffects": {
+              "gdp": 0.3
+            }
+          },
+          {
+            "name": "科研技術突破",
+            "description": "在關鍵科技領域取得重大突破，提升產業競爭力",
+            "effects": {
+              "gdp": 1.8,
+              "confidence": 12
+            }
+          },
+          {
+            "name": "推動十大建設",
+            "description": "新一輪十大建設計畫啟動，基礎設施大幅改善",
+            "effects": {
+              "gdp": 1.5,
+              "unemployment": -0.8,
+              "deficit": 1.0
+            }
+          },
+          {
+            "name": "引進外國勞動力增加產能",
+            "description": "成功引進外籍勞工，解決勞動力短缺問題",
+            "effects": {
+              "gdp": 1.2,
+              "unemployment": -0.5
+            }
+          },
+          {
+            "name": "簽約國際貿易夥伴",
+            "description": "與重要貿易夥伴簽署經貿協議",
+            "effects": {
+              "gdp": 1.3,
+              "confidence": 10
+            }
+          },
+          {
+            "name": "美援增加",
+            "description": "美國增加對台軍事和經濟援助",
+            "effects": {
+              "confidence": 20,
+              "deficit": -1.5
+            }
+          },
+          {
+            "name": "生技產業重大突破",
+            "description": "台灣生技產業在新藥研發上取得重大突破",
+            "effects": {
+              "gdp": 1.6,
+              "confidence": 18
+            }
+          },
+          {
+            "name": "觀光業復甦",
+            "description": "疫情後觀光業強勢復甦，國際遊客大幅增加",
+            "effects": {
+              "gdp": 1.4,
+              "unemployment": -0.6,
+              "confidence": 8
+            }
+          },
+          {
+            "name": "綠能技術輸出成功",
+            "description": "太陽能和風電技術成功輸出國際市場",
+            "effects": {
+              "gdp": 1.3,
+              "confidence": 10
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "地緣政治緊張",
+            "description": "兩岸關係緊張升級，國際投資信心受挫",
+            "effects": {
+              "confidence": -25,
+              "gdp": -1.8
+            }
+          },
+          {
+            "name": "國內政治分裂，議會暫停運作",
+            "description": "政黨惡鬥導致立法院停擺，政策無法推動",
+            "effects": {
+              "confidence": -20,
+              "gdp": -1.2
+            }
+          },
+          {
+            "name": "食安危機",
+            "description": "重大食品安全事件爆發，民眾信心重創",
+            "effects": {
+              "confidence": -15,
+              "gdp": -0.8
+            }
+          },
+          {
+            "name": "重大工安意外",
+            "description": "科學園區發生重大工安意外，產業形象受損",
+            "effects": {
+              "gdp": -1.5,
+              "confidence": -18,
+              "unemployment": 0.3
+            }
+          },
+          {
+            "name": "金融詐騙頻傳",
+            "description": "各種金融詐騙案件層出不窮，社會信任度下降",
+            "effects": {
+              "confidence": -12,
+              "gdp": -0.6
+            }
+          },
+          {
+            "name": "半導體人才外流",
+            "description": "關鍵技術人才大量流失至海外",
+            "effects": {
+              "gdp": -1.3,
+              "confidence": -10
+            }
+          },
+          {
+            "name": "地震災害",
+            "description": "強烈地震造成重大損失，高科技產業受創",
+            "effects": {
+              "gdp": -2.0,
+              "confidence": -15,
+              "deficit": 2.0
+            }
+          },
+          {
+            "name": "缺水缺電危機",
+            "description": "水電供應不穩定影響製造業生產",
+            "effects": {
+              "gdp": -1.4,
+              "confidence": -12,
+              "inflation": 0.8
+            }
+          },
+          {
+            "name": "少子化加劇",
+            "description": "人口老化和少子化問題持續惡化",
+            "effects": {
+              "gdp": -0.8,
+              "deficit": 1.2,
+              "confidence": -8
+            }
+          }
+        ]
+      }
+    },
+    "沙烏地阿拉伯": {
+      "goodNewsRatio": 0.6,
+      "events": {
+        "good": [
+          {
+            "name": "經濟轉型成功",
+            "description": "2030願景計畫取得重大進展，經濟多元化成功",
+            "effects": {
+              "gdp": 2.2,
+              "confidence": 20,
+              "unemployment": -1.0
+            }
+          },
+          {
+            "name": "與外國簽訂貿易條約",
+            "description": "與重要經濟體簽署大型貿易和投資協議",
+            "effects": {
+              "gdp": 1.5,
+              "confidence": 12
+            }
+          },
+          {
+            "name": "旅遊業發展成功",
+            "description": "NEOM等大型旅遊項目吸引國際遊客",
+            "effects": {
+              "gdp": 1.8,
+              "confidence": 15,
+              "unemployment": -0.8
+            }
+          },
+          {
+            "name": "農業科技創新，糧食產量大增",
+            "description": "沙漠農業技術突破，實現糧食自給自足",
+            "effects": {
+              "gdp": 1.3,
+              "confidence": 18,
+              "inflation": -0.8
+            }
+          },
+          {
+            "name": "新任政府深受民眾愛戴",
+            "description": "改革政策獲得民眾廣泛支持，社會穩定",
+            "effects": {
+              "confidence": 25,
+              "gdp": 1.0
+            }
+          },
+          {
+            "name": "綠氫技術領先全球",
+            "description": "在綠色氫能技術方面領先全球，成為新能源大國",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 16
+            },
+            "globalEffects": {
+              "inflation": -0.3
+            }
+          },
+          {
+            "name": "主權財富基金投資成功",
+            "description": "公共投資基金海外投資獲得豐厚回報",
+            "effects": {
+              "gdp": 1.4,
+              "confidence": 10,
+              "deficit": -2.0
+            }
+          },
+          {
+            "name": "石油價格上漲",
+            "description": "國際油價上漲，石油收入大幅增加",
+            "effects": {
+              "gdp": 2.5,
+              "confidence": 15,
+              "deficit": -3.0
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "極端天氣惡化，沙漠化增加",
+            "description": "氣候變化導致極端高溫，農業和基礎設施受損",
+            "effects": {
+              "gdp": -1.5,
+              "confidence": -12,
+              "inflation": 1.0
+            }
+          },
+          {
+            "name": "主權基金投資失敗",
+            "description": "大型海外投資項目失敗，造成重大損失",
+            "effects": {
+              "gdp": -2.0,
+              "confidence": -18,
+              "deficit": 2.5
+            }
+          },
+          {
+            "name": "國內示威遊行",
+            "description": "經濟改革引發社會不滿，爆發抗議活動",
+            "effects": {
+              "confidence": -20,
+              "gdp": -1.2
+            }
+          },
+          {
+            "name": "與西方國家矛盾加深",
+            "description": "人權問題導致與西方國家關係惡化",
+            "effects": {
+              "confidence": -15,
+              "gdp": -1.3
+            }
+          },
+          {
+            "name": "中東戰火再興",
+            "description": "地區軍事衝突升級，地緣政治風險上升",
+            "effects": {
+              "gdp": -2.2,
+              "confidence": -25,
+              "deficit": 2.0
+            }
+          },
+          {
+            "name": "石油價格暴跌",
+            "description": "國際油價暴跌，政府收入銳減",
+            "effects": {
+              "gdp": -3.0,
+              "confidence": -20,
+              "deficit": 4.0
+            }
+          },
+          {
+            "name": "年輕人失業率上升",
+            "description": "經濟轉型過程中年輕人就業機會不足",
+            "effects": {
+              "unemployment": 1.5,
+              "confidence": -15,
+              "gdp": -1.0
+            }
+          },
+          {
+            "name": "基礎設施項目延宕",
+            "description": "大型基礎設施項目進度嚴重落後",
+            "effects": {
+              "confidence": -12,
+              "gdp": -1.1,
+              "deficit": 1.5
+            }
+          },
+          {
+            "name": "水資源危機",
+            "description": "淡水資源嚴重不足，海水淡化成本激增",
+            "effects": {
+              "gdp": -1.3,
+              "inflation": 1.2,
+              "confidence": -10
+            }
+          }
+        ]
+      }
+    },
+    "巴西": {
+      "goodNewsRatio": 0.55,
+      "events": {
+        "good": [
+          {
+            "name": "農業技術改良",
+            "description": "農業技術大幅改良，作物產量創歷史新高",
+            "effects": {
+              "gdp": 1.8,
+              "confidence": 12,
+              "inflation": -0.8
+            }
+          },
+          {
+            "name": "販賣碳權增加",
+            "description": "亞馬遜碳權交易獲得豐厚收入",
+            "effects": {
+              "gdp": 1.2,
+              "confidence": 15,
+              "deficit": -1.5
+            }
+          },
+          {
+            "name": "成功舉辦奧運",
+            "description": "奧運會成功舉辦，國際形象大幅提升",
+            "effects": {
+              "gdp": 2.0,
+              "confidence": 25,
+              "deficit": 1.0
+            }
+          },
+          {
+            "name": "抓獲大毒梟，其財產充公",
+            "description": "成功打擊毒品集團，沒收大量非法資產",
+            "effects": {
+              "confidence": 18,
+              "gdp": 0.8,
+              "deficit": -2.0
+            }
+          },
+          {
+            "name": "全球糧食需求增加",
+            "description": "全球糧食短缺推高農產品價格",
+            "effects": {
+              "gdp": 2.2,
+              "confidence": 10,
+              "inflation": 0.5
+            }
+          },
+          {
+            "name": "再生能源技術突破",
+            "description": "在太陽能和生質能技術方面取得突破",
+            "effects": {
+              "gdp": 1.6,
+              "confidence": 14
+            }
+          },
+          {
+            "name": "區域貿易協議升級",
+            "description": "南美貿易協議升級，區域經濟整合加深",
+            "effects": {
+              "gdp": 1.4,
+              "confidence": 12
+            }
+          },
+          {
+            "name": "國內消費升級",
+            "description": "中產階級擴大，國內消費市場蓬勃發展",
+            "effects": {
+              "gdp": 1.5,
+              "confidence": 10,
+              "unemployment": -0.5
+            }
+          },
+          {
+            "name": "發現新礦藏",
+            "description": "發現大型鐵礦和稀土礦藏",
+            "effects": {
+              "gdp": 1.7,
+              "confidence": 12
+            }
+          }
+        ],
+        "bad": [
+          {
+            "name": "官員貪腐加劇",
+            "description": "高層貪腐醜聞曝光，政治信任度暴跌",
+            "effects": {
+              "confidence": -25,
+              "gdp": -1.5
+            }
+          },
+          {
+            "name": "毒梟幫派問題增加",
+            "description": "毒品集團勢力擴張，社會治安惡化",
+            "effects": {
+              "confidence": -20,
+              "gdp": -1.2,
+              "unemployment": 0.5
+            }
+          },
+          {
+            "name": "濫伐雨林導致氣候問題",
+            "description": "亞馬遜雨林大面積砍伐引發國際制裁",
+            "effects": {
+              "gdp": -1.8,
+              "confidence": -15
+            },
+            "globalEffects": {
+              "confidence": -3
+            }
+          },
+          {
+            "name": "大宗商品價格下跌",
+            "description": "鐵礦石、大豆等主要出口商品價格暴跌",
+            "effects": {
+              "gdp": -2.5,
+              "confidence": -18,
+              "deficit": 2.0
+            }
+          },
+          {
+            "name": "外國實驗室發明人造咖啡",
+            "description": "人造咖啡技術衝擊傳統咖啡種植業",
+            "effects": {
+              "gdp": -1.3,
+              "confidence": -10,
+              "unemployment": 0.8
+            }
+          },
+          {
+            "name": "黃豆遭遇疾病大量死亡",
+            "description": "黃豆作物遭遇病蟲害，產量銳減",
+            "effects": {
+              "gdp": -1.6,
+              "confidence": -12,
+              "inflation": 1.5
+            }
+          },
+          {
+            "name": "貨幣危機",
+            "description": "雷亞爾大幅貶值，引發通膨飆升",
+            "effects": {
+              "gdp": -2.0,
+              "confidence": -20,
+              "inflation": 3.0
+            }
+          },
+          {
+            "name": "乾旱影響農業",
+            "description": "嚴重乾旱影響農業生產和水力發電",
+            "effects": {
+              "gdp": -1.8,
+              "confidence": -15,
+              "inflation": 1.2
+            }
+          },
+          {
+            "name": "城市貧民窟暴動",
+            "description": "經濟不平等引發大規模社會動亂",
+            "effects": {
+              "confidence": -22,
+              "gdp": -1.4
+            }
+          },
+          {
+            "name": "外債危機",
+            "description": "外債負擔沉重，面臨債務違約風險",
+            "effects": {
+              "confidence": -25,
+              "gdp": -2.2,
+              "deficit": 3.0
+            }
+          }
+        ]
+      }
+    }
+  }
+}

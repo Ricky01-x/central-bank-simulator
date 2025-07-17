@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏦 全球央行模擬器</title>
+    
+    <!-- Socket.IO CDN -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 遊戲主介面佈局 */
+        .game-content {
+            display: none;
+        }
+
+        .game-interface {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .side-panel, .main-panel, .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        /* 時間顯示 */
+        .time-display {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            width: 0%;
+        }
+
+        /* 全局狀態 */
+        .global-status {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 主動技能面板 */
+        .active-skill-panel {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 3px solid #3498db;
+        }
+
+        .skill-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 指標網格 */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .indicator {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .indicator.positive {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #d5f4e6, #f8f9fa);
+        }
+
+        .indicator.negative {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fadbd8, #f8f9fa);
+        }
+
+        .indicator-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .indicator-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* 政策工具面板 */
+        .tool-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .tool-group h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .tool-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tool-controls label {
+            min-width: 80px;
+            font-weight: bold;
+        }
+
+        .tool-controls input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .value-display {
+            min-width: 80px;
+            text-align: center;
+            font-weight: bold;
+            color: #3498db;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 2px solid #3498db;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 5px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-skill {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+            font-size: 1em;
+            padding: 15px 20px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-cooldown {
+            background: #95a5a6 !important;
+            cursor: not-allowed !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 冷卻系統樣式 */
+        .cooldown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: width 0.1s linear;
+            z-index: 2;
+        }
+
+        .cooldown-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #e74c3c;
+            transition: width 0.1s linear;
+            z-index: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 國家選擇畫面 */
+        .country-selection {
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .country-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .country-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .country-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-color: #3498db;
+        }
+
+        .country-card.selected {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+        }
+
+        .country-flag-large {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .country-card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .skill-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .skill-preview h4 {
+            color: #e74c3c;
+            margin-bottom: 8px;
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 30px;
+        }
+
+        .btn-start:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-start:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        /* 等待大廳 */
+        .waiting-lobby {
+            display: none;
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .players-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .player-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .player-card.host {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, #fff, #ffe6e6);
+        }
+
+        /* 遊戲日誌 */
+        .game-log {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+            font-size: 0.9em;
+        }
+
+        /* 其他玩家列表 */
+        .other-player {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85em;
+        }
+
+        .stat {
+            background: white;
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat.confidential {
+            background: #95a5a6 !important;
+            color: white !important;
+            font-style: italic;
+        }
+
+        /* 經濟警報 */
+        #economicAlerts {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            z-index: 1000;
+        }
+
+        .prosperity-notice {
+            padding: 12px 16px;
+            margin: 5px 0;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            animation: slideInFromRight 0.3s ease-out;
+        }
+
+        .success-notice {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .error-notice {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        @keyframes slideInFromRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 快訊系統樣式 */
+        .news-alert-container {
+            position: fixed !important;
+            top: 20px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 10000 !important;
+            max-width: 500px !important;
+            width: 90% !important;
+        }
+        
+        .news-alert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: newsSlideDown 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .news-alert.global-good {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .news-alert.global-bad {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        
+        .news-alert.country-good {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+        }
+        
+        .news-alert.country-bad {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+        }
+        
+        @keyframes newsSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .news-alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .news-alert-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.3;
+            flex: 1;
+        }
+        
+        .news-alert-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+        
+        .news-alert-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .news-alert-description {
+            font-size: 15px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+        
+        .news-alert-effects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .effect-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .news-alert-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            transition: width 5s linear;
+            width: 100%;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .game-interface {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .indicators-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 經濟警報區域 -->
+        <div id="economicAlerts"></div>
+
+        <!-- 國家選擇畫面 -->
+        <div class="country-selection" id="countrySelection">
+            <h1>🌍 選擇你要扮演的國家</h1>
+            <div class="country-cards">
+                <div class="country-card" data-country="USA">
+                    <div class="country-flag-large">🇺🇸</div>
+                    <h2>美國</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>全球霸主，政策影響全世界</p>
+                        <p><strong>優勢：</strong>美元霸權，政策傳導力強</p>
+                        <p><strong>挑戰：</strong>全球責任重大，政策失誤影響廣</p>
+                        <div class="skill-preview">
+                            <h4>⚔️ 專屬技能：經濟制裁</h4>
+                            <p>對目標國家實施嚴厲制裁，造成持續2季的顯著負面影響，但有35%機率反噬自身</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="country-card" data-country="CHN">
+                    <div class="country-flag-large">🇨🇳</div>
+                    <h2>中國</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>世界工廠，高速發展中經濟體</p>
+                        <p><strong>優勢：</strong>政策執行力強，成長潛力大</p>
+                        <p><strong>挑戰：</strong>結構轉型壓力，外部依賴度高</p>
+                        <div class="skill-preview">
+                            <h4>🚀 專屬技能：人多好辦事</h4>
+                            <p>集中力量辦大事，實現重大科技突破，大幅提升GDP成長和民眾信心，無明顯副作用</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="country-card" data-country="JPN">
+                    <div class="country-flag-large">🇯🇵</div>
+                    <h2>日本</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>成熟發達經濟體，技術先進</p>
+                        <p><strong>優勢：</strong>貨幣政策經驗豐富，技術領先</p>
+                        <p><strong>挑戰：</strong>人口老化，通縮風險</p>
+                        <div class="skill-preview">
+                            <h4>🎯 專屬技能：改善老人就業問題</h4>
+                            <p>透過數位化培訓和彈性工作制度，提升高齡勞動參與率，解決通縮和信心問題</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="country-card" data-country="TWN">
+                    <div class="country-flag-large">🇹🇼</div>
+                    <h2>台灣</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>小而美經濟體，靈活應變</p>
+                        <p><strong>優勢：</strong>科技製造業發達，政策彈性高</p>
+                        <p><strong>挑戰：</strong>易受外部衝擊，內需市場小</p>
+                        <div class="skill-preview">
+                            <h4>🎲 專屬技能：夾縫中求生存</h4>
+                            <p>選擇搭乘某國經濟順風車，若該國表現良好則獲得額外收益，體現小國靈活外交</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="country-card" data-country="BRA">
+                    <div class="country-flag-large">🇧🇷</div>
+                    <h2>巴西</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>新興市場代表，資源豐富</p>
+                        <p><strong>優勢：</strong>自然資源豐富，內需市場龐大</p>
+                        <p><strong>挑戰：</strong>貪腐問題嚴重，政策不穩定</p>
+                        <div class="skill-preview">
+                            <h4>⚖️ 專屬技能：反貪腐行動</h4>
+                            <p>發動大規模反貪腐運動，大幅提升政府效能和民眾信心，改善財政狀況</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="country-card" data-country="SAU">
+                    <div class="country-flag-large">🇸🇦</div>
+                    <h2>沙烏地阿拉伯</h2>
+                    <div class="country-description">
+                        <p><strong>特色：</strong>石油大國，轉型中經濟</p>
+                        <p><strong>優勢：</strong>石油資源控制力，財政充裕</p>
+                        <p><strong>挑戰：</strong>過度依賴石油，多元化急需</p>
+                        <div class="skill-preview">
+                            <h4>🏭 專屬技能：產業轉型</h4>
+                            <p>推進經濟多元化，逐步降低石油依賴度，建立可持續發展的經濟結構</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-room-controls">
+                <div style="margin: 20px 0;">
+                    <input type="text" id="playerNameInput" placeholder="輸入你的名稱" style="padding: 10px; margin-right: 10px; border-radius: 8px; border: 2px solid #ddd;">
+                    <button onclick="createGame()" class="btn btn-primary" id="createGameBtn">創建遊戲</button>
+                </div>
+                <div style="margin: 20px 0;">
+                    <input type="text" id="gameIdInput" placeholder="輸入遊戲房間代碼" style="padding: 10px; margin-right: 10px; border-radius: 8px; border: 2px solid #ddd;">
+                    <button onclick="joinGame()" class="btn btn-success" id="joinGameBtn">加入遊戲</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 等待大廳 -->
+        <div class="waiting-lobby" id="waitingLobby">
+            <h1>🎮 遊戲大廳</h1>
+            <p>房間代碼：<strong id="roomCode">-</strong></p>
+            <p>等待其他玩家加入...</p>
+            
+            <h3>已加入玩家</h3>
+            <div class="players-list" id="playersInLobby">
+                <!-- 動態生成 -->
+            </div>
+            
+            <button class="btn-start" id="startGameBtn" onclick="startGame()" disabled>開始遊戲</button>
+        </div>
+
+        <!-- 遊戲主界面 -->
+        <div class="game-content" id="gameContent">
+            <h1 id="gameTitle">🏦 全球央行模擬器</h1>
+            
+            <div class="game-interface">
+                <!-- 左側面板 -->
+                <div class="side-panel">
+                    <div class="time-display">
+                        <h3>⏰ 第 <span id="currentQuarter">1</span> 季</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p>剩餘時間：<span id="timeRemaining">0:30</span></p>
+                    </div>
+
+                    <div class="global-status">
+                        <h4>🛢️ 全球石油價格</h4>
+                        <p id="globalOilPrice">$80.0</p>
+                    </div>
+                    
+                    <h3>🌍 其他玩家</h3>
+                    <div id="otherPlayersList">
+                        <!-- 動態生成 -->
+                    </div>
+
+                    <h3>📰 遊戲動態</h3>
+                    <div class="game-log" id="gameLogContainer">
+                        <!-- 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 中間面板 -->
+                <div class="main-panel">
+                    <h2 id="myCountryTitle">🇺🇸 美國央行</h2>
+                    
+                    <div class="active-skill-panel" id="activeSkillPanel">
+                        <h3 id="skillTitle">⚔️ 發動貿易戰爭</h3>
+                        <div class="skill-description" id="skillDescription">
+                            對目標國家發動貿易戰，造成重大經濟損失，但有35%機率反噬自身
+                        </div>
+                        <div class="skill-controls" id="skillControls">
+                            <button class="btn btn-skill" id="activeSkillBtn">
+                                <span class="cooldown-text">⚔️ 發動技能</span>
+                                <div class="cooldown-overlay" id="activeSkillCooldown" style="width: 0%;"></div>
+                                <div class="cooldown-progress" id="activeSkillProgress" style="width: 0%;"></div>
+                            </button>
+                            
+                            <!-- 沙烏地專屬石油控制按鈕（默認隱藏）-->
+                            <div id="saudiOilControls" style="display: none; margin-top: 15px;">
+                                <h4 style="color: white; margin-bottom: 10px;">🛢️ 石油產量控制</h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-warning" id="increaseOilBtn" style="flex: 1;">
+                                        <span class="cooldown-text">📈 增產降價</span>
+                                        <div class="cooldown-overlay" id="increaseOilCooldown" style="width: 0%;"></div>
+                                        <div class="cooldown-progress" id="increaseOilProgress" style="width: 0%;"></div>
+                                    </button>
+                                    <button class="btn btn-danger" id="decreaseOilBtn" style="flex: 1;">
+                                        <span class="cooldown-text">📉 減產升價</span>
+                                        <div class="cooldown-overlay" id="decreaseOilCooldown" style="width: 0%;"></div>
+                                        <div class="cooldown-progress" id="decreaseOilProgress" style="width: 0%;"></div>
+                                    </button>
+                                </div>
+                                <p style="color: rgba(255,255,255,0.8); font-size: 0.9em; margin-top: 8px; text-align: center;">
+                                    控制全球石油價格，影響所有國家經濟
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="indicators-grid">
+                        <div class="indicator" id="gdpIndicator">
+                            <div class="indicator-label">📊 GDP成長率</div>
+                            <div class="indicator-value" id="gdpGrowth">2.8%</div>
+                        </div>
+                        <div class="indicator" id="inflationIndicator">
+                            <div class="indicator-label">💹 通膨率</div>
+                            <div class="indicator-value" id="inflation">2.1%</div>
+                        </div>
+                        <div class="indicator" id="unemploymentIndicator">
+                            <div class="indicator-label">👥 失業率</div>
+                            <div class="indicator-value" id="unemployment">4.2%</div>
+                        </div>
+                        <div class="indicator" id="confidenceIndicator">
+                            <div class="indicator-label">😊 民眾信心</div>
+                            <div class="indicator-value" id="confidence">65</div>
+                        </div>
+                        <div class="indicator" id="deficitIndicator">
+                            <div class="indicator-label">💰 財政赤字</div>
+                            <div class="indicator-value" id="deficit">3.2%</div>
+                        </div>
+                        <div class="indicator" id="stockIndicator">
+                            <div class="indicator-label">📈 股價指數變化率</div>
+                            <div class="indicator-value" id="stockIndex">+2.5%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側面板 -->
+                <div class="controls-panel">
+                    <h2>🛠️ 政策工具</h2>
+                    
+                    <!-- 利率政策 -->
+                    <div class="tool-group">
+                        <h3>💰 利率政策</h3>
+                        <div class="tool-controls">
+                            <div class="value-display" id="interestRateValue">2.5%</div>
+                            <input type="range" id="interestRateSlider" min="-2" max="20" step="0.25" value="2.5">
+                        </div>
+                        <button class="btn btn-primary" id="interestRateBtn">
+                            <span class="cooldown-text">🎯 調整利率</span>
+                            <div class="cooldown-overlay" id="interestRateCooldown" style="width: 0%;"></div>
+                            <div class="cooldown-progress" id="interestRateProgress" style="width: 0%;"></div>
+                        </button>
+                    </div>
+
+                    <!-- 存款準備金率 -->
+                    <div class="tool-group">
+                        <h3>🏦 存款準備金率</h3>
+                        <div class="tool-controls">
+                            <div class="value-display" id="reserveRatioValue">10%</div>
+                            <input type="range" id="reserveRatioSlider" min="0" max="30" step="0.5" value="10">
+                        </div>
+                        <button class="btn btn-primary" id="reserveRatioBtn">
+                            <span class="cooldown-text">🏦 調整準備金率</span>
+                            <div class="cooldown-overlay" id="reserveRatioCooldown" style="width: 0%;"></div>
+                            <div class="cooldown-progress" id="reserveRatioProgress" style="width: 0%;"></div>
+                        </button>
+                    </div>
+
+                    <!-- 財政政策 -->
+                    <div class="tool-group">
+                        <h3>🏛️ 財政政策</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-success" id="increaseSpendingBtn">
+                                <span class="cooldown-text">📈 增加支出</span>
+                                <div class="cooldown-overlay" id="increaseSpendingCooldown" style="width: 0%;"></div>
+                                <div class="cooldown-progress" id="increaseSpendingProgress" style="width: 0%;"></div>
+                            </button>
+                            <button class="btn btn-warning" id="decreaseSpendingBtn">
+                                <span class="cooldown-text">📉 減少支出</span>
+                                <div class="cooldown-overlay" id="decreaseSpendingCooldown" style="width: 0%;"></div>
+                                <div class="cooldown-progress" id="decreaseSpendingProgress" style="width: 0%;"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 量化寬鬆政策 -->
+                    <div class="tool-group">
+                        <h3>🎛️ 量化寬鬆政策</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-success" id="qeBtn">
+                                <span class="cooldown-text">💸 量化寬鬆</span>
+                                <div class="cooldown-overlay" id="qeCooldown" style="width: 0%;"></div>
+                                <div class="cooldown-progress" id="qeProgress" style="width: 0%;"></div>
+                            </button>
+                            <button class="btn btn-warning" id="qtBtn">
+                                <span class="cooldown-text">🔒 量化緊縮</span>
+                                <div class="cooldown-overlay" id="qtCooldown" style="width: 0%;"></div>
+                                <div class="cooldown-progress" id="qtProgress" style="width: 0%;"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 緊急工具 -->
+                    <div class="tool-group" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white;">
+                        <h3>🚨 緊急政策工具</h3>
+                        <button class="btn btn-danger" id="cashDistributionBtn">
+                            <span class="cooldown-text">💰 緊急普發現金</span>
+                            <div class="cooldown-overlay" id="cashDistributionCooldown" style="width: 0%;"></div>
+                            <div class="cooldown-progress" id="cashDistributionProgress" style="width: 0%;"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 內嵌所有 JavaScript 程式碼 -->
+    <script>
+        console.log('🎮 開始載入央行模擬器...');
+
+        // ===== 1. 快訊系統 =====
+        function NewsAlertSystem() {
+            this.alertContainer = null;
+            this.currentAlert = null;
+            this.autoCloseTimeout = null;
+            this.isReady = false;
+            
+            console.log('🔧 初始化快訊系統...');
+            this.init();
+        }
+
+        NewsAlertSystem.prototype.init = function() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.setupSystem();
+                });
+            } else {
+                this.setupSystem();
+            }
+        };
+
+        NewsAlertSystem.prototype.setupSystem = function() {
+            this.createAlertContainer();
+            this.isReady = true;
+            console.log('✅ 快訊系統初始化完成');
+        };
+
+        NewsAlertSystem.prototype.createAlertContainer = function() {
+            const existing = document.getElementById('news-alert-container');
+            if (existing) {
+                existing.remove();
+            }
+            
+            this.alertContainer = document.createElement('div');
+            this.alertContainer.id = 'news-alert-container';
+            this.alertContainer.className = 'news-alert-container';
+            this.alertContainer.style.display = 'none';
+            
+            document.body.appendChild(this.alertContainer);
+            console.log('📦 快訊容器已創建');
+        };
+
+        NewsAlertSystem.prototype.showAlert = function(event) {
+            if (!this.isReady) {
+                console.warn('⚠️ 快訊系統尚未準備就緒，稍後重試...');
+                setTimeout(() => this.showAlert(event), 500);
+                return;
+            }
+
+            console.log('📢 顯示快訊:', event.name);
+            
+            if (this.currentAlert) {
+                this.closeAlert();
+            }
+            
+            const alertClass = this.getAlertClass(event);
+            const typeIcon = this.getTypeIcon(event);
+            const effectsHtml = this.formatEffects(event.effects);
+            
+            const alertElement = document.createElement('div');
+            alertElement.className = 'news-alert ' + alertClass;
+            
+            alertElement.innerHTML = `
+                <div class="news-alert-header">
+                    <h3 class="news-alert-title">${typeIcon} ${event.name}</h3>
+                    <button class="news-alert-close" onclick="window.newsAlertSystem.closeAlert()">×</button>
+                </div>
+                <div class="news-alert-description">${event.description}</div>
+                ${effectsHtml}
+                <div class="news-alert-progress"></div>
+            `;
+            
+            this.alertContainer.innerHTML = '';
+            this.alertContainer.appendChild(alertElement);
+            this.alertContainer.style.display = 'block';
+            this.currentAlert = alertElement;
+            
+            setTimeout(() => {
+                const progressBar = alertElement.querySelector('.news-alert-progress');
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                }
+            }, 100);
+            
+            this.autoCloseTimeout = setTimeout(() => {
+                this.closeAlert();
+            }, 5000);
+            
+            console.log('✅ 快訊顯示成功');
+        };
+
+        NewsAlertSystem.prototype.closeAlert = function() {
+            if (this.autoCloseTimeout) {
+                clearTimeout(this.autoCloseTimeout);
+                this.autoCloseTimeout = null;
+            }
+            
+            if (this.alertContainer && this.currentAlert) {
+                this.alertContainer.style.display = 'none';
+                this.alertContainer.innerHTML = '';
+            }
+            
+            this.currentAlert = null;
+            console.log('📪 快訊已關閉');
+        };
+
+        NewsAlertSystem.prototype.getAlertClass = function(event) {
+            console.log('🎨 決定快訊樣式:', event.type, event.category);
+            
+            if (event.type === 'global') {
+                return event.category === 'good' ? 'global-good' : 'global-bad';
+            } else if (event.type === 'country') {
+                return event.category === 'good' ? 'country-good' : 'country-bad';
+            } else {
+                // 預設為全球好消息
+                return 'global-good';
+            }
+        };
+
+        NewsAlertSystem.prototype.getTypeIcon = function(event) {
+            if (event.type === 'global') {
+                return event.category === 'good' ? '🌍📈' : '🌍⚠️';
+            } else {
+                const countryFlags = {
+                    "中國": "🇨🇳", "美國": "🇺🇸", "日本": "🇯🇵",
+                    "台灣": "🇹🇼", "沙烏地阿拉伯": "🇸🇦", "巴西": "🇧🇷"
+                };
+                const flag = countryFlags[event.country] || "🏳️";
+                const indicator = event.category === 'good' ? '📈' : '📉';
+                return flag + indicator;
+            }
+        };
+
+        NewsAlertSystem.prototype.formatEffects = function(effects) {
+            if (!effects || Object.keys(effects).length === 0) {
+                return '';
+            }
+            
+            const effectTags = [];
+            
+            if (effects.gdp) {
+                const sign = effects.gdp > 0 ? '+' : '';
+                effectTags.push(`<span class="effect-tag">GDP ${sign}${effects.gdp.toFixed(1)}%</span>`);
+            }
+            
+            if (effects.confidence) {
+                const sign = effects.confidence > 0 ? '+' : '';
+                effectTags.push(`<span class="effect-tag">信心 ${sign}${effects.confidence}</span>`);
+            }
+            
+            if (effects.inflation) {
+                const sign = effects.inflation > 0 ? '+' : '';
+                effectTags.push(`<span class="effect-tag">通膨 ${sign}${effects.inflation.toFixed(1)}%</span>`);
+            }
+            
+            return effectTags.length > 0 ? `<div class="news-alert-effects">${effectTags.join('')}</div>` : '';
+        };
+
+        // ===== 2. 遊戲狀態管理 =====
+        let socket;
+        let gameState = {
+            playerId: null,
+            gameId: null,
+            playerData: null,
+            isHost: false,
+            selectedCountry: null,
+            policyCooldowns: {},
+            allPlayers: {}
+        };
+
+        // ===== 3. 初始化 Socket 連接 =====
+        function initializeSocket() {
+            socket = io();
+            
+            socket.on('connected', function(data) {
+                gameState.playerId = data.player_id;
+                console.log('🔗 連接成功，玩家ID:', gameState.playerId);
+            });
+
+            socket.on('game_created', function(data) {
+                console.log('🎯 遊戲創建成功:', data);
+                gameState.gameId = data.game_id;
+                gameState.playerData = data.player_data;
+                gameState.isHost = true;
+                showWaitingLobby();
+                showSuccess('遊戲房間創建成功！房間代碼：' + data.game_id);
+            });
+
+            socket.on('player_joined', function(data) {
+                console.log('👥 玩家加入:', data);
+                updatePlayersList(data.all_players);
+                if (!gameState.isHost) {
+                    showWaitingLobby();
+                }
+            });
+
+            socket.on('game_started', function() {
+                console.log('🚀 遊戲開始');
+                showGamePlay();
+                showSuccess('遊戲開始！第1季計時器已啟動');
+                
+                // 🆕 額外的延遲刷新，確保所有數據都已載入
+                setTimeout(function() {
+                    if (gameState.playerData) {
+                        forceRefreshPlayerPanel();
+                        console.log('🎯 遊戲開始後額外刷新完成');
+                    }
+                }, 2000);
+            });
+
+            socket.on('realtime_update', function(data) {
+                updateTimeDisplay(data.progress, data.remaining_time);
+                
+                if (data.global_oil_price !== undefined) {
+                    updateGlobalOilPrice(data.global_oil_price);
+                }
+                
+                if (data.players_cooldowns) {
+                    var myPlayerCooldown = data.players_cooldowns.find(function(p) {
+                        return p.player_id === gameState.playerId;
+                    });
+                    if (myPlayerCooldown) {
+                        updatePolicyCooldowns(myPlayerCooldown.cooldown_status);
+                    }
+                }
+                
+                if (data.players) {
+                    updateAllPlayersRealtime(data.players);
+                }
+            });
+
+            socket.on('quarter_advanced', function(data) {
+                console.log('📅 收到季度推進事件，完整數據:', data);
+                
+                updateQuarter(data.quarter);
+                
+                // 使用完整日誌而不是截斷版本
+                var logsToShow = data.full_game_log || data.game_log || [];
+                updateGameLog(logsToShow);
+                
+                updateAllPlayers(data.players);
+                
+                if (data.global_oil_price !== undefined) {
+                    updateGlobalOilPrice(data.global_oil_price);
+                }
+                
+                // 🎯 修正：檢查事件數據結構並過濾顯示
+                console.log('🔍 檢查事件數據:', {
+                    hasTriggeredEvents: !!data.triggered_events,
+                    eventsType: typeof data.triggered_events,
+                    eventsIsArray: Array.isArray(data.triggered_events),
+                    eventsLength: Array.isArray(data.triggered_events) ? data.triggered_events.length : 'N/A',
+                    eventsContent: data.triggered_events
+                });
+                
+                // 檢查事件數據格式
+                var validEvents = [];
+                if (data.triggered_events) {
+                    if (Array.isArray(data.triggered_events)) {
+                        validEvents = data.triggered_events;
+                    } else if (typeof data.triggered_events === 'boolean' && data.triggered_events === true) {
+                        console.error('❌ 後端錯誤：triggered_events 是布林值而不是陣列！請檢查 app.py');
+                        showError('後端事件數據格式錯誤，請檢查 app.py 中的 advance_quarter 函數');
+                    } else {
+                        console.warn('⚠️ 未預期的事件數據格式:', typeof data.triggered_events);
+                    }
+                }
+                
+                if (validEvents.length > 0) {
+                    console.log(`🎯 第${data.quarter}季收到 ${validEvents.length} 個有效事件`);
+                    
+                    // 🆕 過濾事件：只顯示全球事件和自己國家的事件
+                    var eventsToShow = validEvents.filter(function(event) {
+                        if (event.type === 'global') {
+                            return true; // 全球事件顯示給所有人
+                        } else if (event.type === 'country') {
+                            // 國家事件只顯示給對應國家的玩家
+                            var myCountryName = getCountryNameChinese(gameState.playerData?.country_code);
+                            return event.country === myCountryName;
+                        }
+                        return false;
+                    });
+                    
+                    console.log(`📢 過濾後顯示 ${eventsToShow.length} 個事件給當前玩家`);
+                    
+                    // 逐個處理過濾後的事件
+                    eventsToShow.forEach(function(event, index) {
+                        console.log(`📢 處理事件 ${index + 1}:`, event);
+                        
+                        // 驗證事件格式
+                        if (!event.name || !event.description) {
+                            console.warn('⚠️ 事件格式不完整:', event);
+                            return;
+                        }
+                        
+                        // 延遲顯示，避免快訊重疊
+                        setTimeout(function() {
+                            if (window.newsAlertSystem && window.newsAlertSystem.isReady) {
+                                try {
+                                    window.newsAlertSystem.showAlert(event);
+                                    console.log('✅ 快訊顯示成功:', event.name);
+                                } catch (error) {
+                                    console.error('❌ 快訊顯示錯誤:', error);
+                                    // 備用方案
+                                    showSuccess(`📰 ${event.name}: ${event.description}`);
+                                }
+                            } else {
+                                console.warn('⚠️ 快訊系統未就緒，使用備用顯示');
+                                showSuccess(`📰 ${event.name}: ${event.description}`);
+                            }
+                        }, index * 1500); // 每個事件間隔1.5秒
+                    });
+                } else {
+                    console.log(`🔄 第${data.quarter}季沒有觸發特殊事件`);
+                }
+                
+                showQuarterTransition(data.quarter);
+            });
+
+            socket.on('game_update', function(data) {
+                updateAllPlayers(data.players);
+                updateGameLog(data.game_log);
+                
+                if (data.global_oil_price !== undefined) {
+                    updateGlobalOilPrice(data.global_oil_price);
+                }
+            });
+
+            socket.on('error', function(data) {
+                showError(data.message);
+            });
+        }
+
+        function getCountryNameChinese(countryCode) {
+            var mapping = {
+                'USA': '美國',
+                'CHN': '中國', 
+                'JPN': '日本',
+                'TWN': '台灣',
+                'SAU': '沙烏地阿拉伯',
+                'BRA': '巴西'
+            };
+            return mapping[countryCode] || countryCode;
+        }        
+
+        // ===== 4. 政策執行函數 =====
+        function executePolicy(actionType, additionalData) {
+            if (!additionalData) additionalData = {};
+            
+            if (gameState.policyCooldowns) {
+                var globalCooldown = gameState.policyCooldowns.global_policy_cooldown || 0;
+                var activeSkillCooldown = gameState.policyCooldowns.active_skill || 0;
+                
+                var activeSkills = ['taiwan_bet', 'brazil_anticorruption', 'saudi_transformation', 
+                                   'usa_trade_war', 'china_mass_mobilization', 'japan_aging_solution'];
+                
+                if (activeSkills.indexOf(actionType) !== -1) {
+                    if (activeSkillCooldown > 0) {
+                        showError('技能冷卻中，還需等待 ' + activeSkillCooldown + ' 季');
+                        return;
+                    }
+                } else {
+                    if (globalCooldown > 0) {
+                        var remaining = Math.ceil(globalCooldown);
+                        showError('政策冷卻中，還需等待 ' + remaining + ' 秒才能發動下個政策');
+                        return;
+                    }
+                }
+            }
+            
+            var policyData = {
+                action_type: actionType
+            };
+            
+            for (var key in additionalData) {
+                policyData[key] = additionalData[key];
+            }
+            
+            socket.emit('policy_action', policyData);
+            console.log('🎯 執行政策:', policyData);
+        }
+
+        // ===== 5. 國家選擇處理 =====
+        function setupCountrySelection() {
+            var countryCards = document.querySelectorAll('.country-card');
+            for (var i = 0; i < countryCards.length; i++) {
+                countryCards[i].addEventListener('click', function() {
+                    var allCards = document.querySelectorAll('.country-card');
+                    for (var j = 0; j < allCards.length; j++) {
+                        allCards[j].classList.remove('selected');
+                    }
+                    this.classList.add('selected');
+                    gameState.selectedCountry = this.dataset.country;
+                    console.log('🌍 選擇國家:', gameState.selectedCountry);
+                });
+            }
+        }
+
+        // ===== 6. 遊戲房間控制函數 =====
+        function createGame() {
+            var playerName = document.getElementById('playerNameInput').value.trim();
+            
+            if (!playerName) {
+                showError('請輸入玩家名稱');
+                return;
+            }
+            
+            if (!gameState.selectedCountry) {
+                showError('請選擇一個國家');
+                return;
+            }
+            
+            socket.emit('create_game', {
+                player_name: playerName,
+                country_code: gameState.selectedCountry
+            });
+            
+            console.log('🎮 創建遊戲:', { playerName: playerName, country: gameState.selectedCountry });
+        }
+
+        function joinGame() {
+            var playerName = document.getElementById('playerNameInput').value.trim();
+            var gameId = document.getElementById('gameIdInput').value.trim();
+            
+            if (!playerName) {
+                showError('請輸入玩家名稱');
+                return;
+            }
+            
+            if (!gameId) {
+                showError('請輸入遊戲房間代碼');
+                return;
+            }
+            
+            if (!gameState.selectedCountry) {
+                showError('請選擇一個國家');
+                return;
+            }
+            
+            socket.emit('join_game', {
+                game_id: gameId,
+                player_name: playerName,
+                country_code: gameState.selectedCountry
+            });
+            
+            console.log('🚪 加入遊戲:', { gameId: gameId, playerName: playerName, country: gameState.selectedCountry });
+        }
+
+        function startGame() {
+            if (!gameState.isHost) {
+                showError('只有房主可以開始遊戲');
+                return;
+            }
+            
+            socket.emit('start_game');
+            console.log('🚀 房主開始遊戲');
+        }
+
+        // ===== 7. 界面更新函數 =====
+        function showWaitingLobby() {
+            document.getElementById('countrySelection').style.display = 'none';
+            document.getElementById('waitingLobby').style.display = 'block';
+            document.getElementById('gameContent').style.display = 'none';
+            
+            var roomCodeElement = document.getElementById('roomCode');
+            if (roomCodeElement) {
+                roomCodeElement.textContent = gameState.gameId;
+            }
+            
+            var startBtn = document.getElementById('startGameBtn');
+            if (startBtn) {
+                startBtn.disabled = !gameState.isHost;
+                startBtn.textContent = gameState.isHost ? '開始遊戲' : '等待房主開始...';
+            }
+        }
+
+        function showGamePlay() {
+            document.getElementById('countrySelection').style.display = 'none';
+            document.getElementById('waitingLobby').style.display = 'none';
+            document.getElementById('gameContent').style.display = 'block';
+            
+            // 🆕 增加多次刷新確保正確顯示
+            setTimeout(function() {
+                forceRefreshPlayerPanel();
+            }, 100);
+            
+            setTimeout(function() {
+                forceRefreshPlayerPanel();
+            }, 500);
+            
+            setTimeout(function() {
+                forceRefreshPlayerPanel();
+            }, 1000);
+            
+            console.log('🎮 遊戲界面已載入');
+        }
+
+        // 🆕 新增強制刷新函數
+        function forceRefreshPlayerPanel() {
+            console.log('🔄 強制刷新玩家面板');
+            
+            if (!gameState.playerData) {
+                console.warn('⚠️ 玩家數據尚未載入，跳過刷新');
+                return;
+            }
+            
+            updateMyCountryPanel();
+            setupCountrySpecificPanels();
+            updateActiveSkillPanel();
+            
+            // 確保滑桿值正確
+            var data = gameState.playerData.country_data;
+            if (data) {
+                var interestSlider = document.getElementById('interestRateSlider');
+                var interestValue = document.getElementById('interestRateValue');
+                if (interestSlider && interestValue) {
+                    interestSlider.value = data.interest_rate;
+                    interestValue.textContent = data.interest_rate.toFixed(2) + '%';
+                }
+                
+                var reserveSlider = document.getElementById('reserveRatioSlider');
+                var reserveValue = document.getElementById('reserveRatioValue');
+                if (reserveSlider && reserveValue) {
+                    reserveSlider.value = data.reserve_ratio;
+                    reserveValue.textContent = data.reserve_ratio.toFixed(1) + '%';
+                }
+            }
+            
+            console.log('✅ 面板刷新完成，當前國家:', gameState.playerData.country_code);
+        }
+
+        function updatePlayersList(players) {
+            var container = document.getElementById('playersInLobby');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                var playerCard = document.createElement('div');
+                var isHost = player.id === gameState.playerId && gameState.isHost;
+                playerCard.className = 'player-card' + (isHost ? ' host' : '');
+                playerCard.innerHTML = 
+                    '<div style="font-size: 2em; margin-bottom: 10px;">' + player.country_flag + '</div>' +
+                    '<div style="font-weight: bold;">' + player.name + '</div>' +
+                    '<div style="color: #666;">' + player.country_name + '</div>' +
+                    (isHost ? '<div style="color: #e74c3c; font-weight: bold;">房主</div>' : '');
+                container.appendChild(playerCard);
+            }
+        }
+
+        function updateAllPlayers(players) {
+            gameState.allPlayers = {};
+            for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                gameState.allPlayers[player.id] = player;
+                if (player.id === gameState.playerId) {
+                    gameState.playerData = player;
+                }
+            }
+            
+            updateOtherPlayersList(players);
+            updateMyCountryPanel();
+            
+            // 🆕 如果是第一次載入，強制刷新面板
+            if (document.getElementById('gameContent').style.display === 'block') {
+                updateActiveSkillPanel();
+            }
+        }
+
+        function updateAllPlayersRealtime(players) {
+            for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                if (gameState.allPlayers && gameState.allPlayers[player.id]) {
+                    for (var key in player) {
+                        gameState.allPlayers[player.id][key] = player[key];
+                    }
+                }
+                if (player.id === gameState.playerId) {
+                    for (var key in player) {
+                        gameState.playerData[key] = player[key];
+                    }
+                }
+            }
+            
+            updateOtherPlayersList(players);
+            updateMyCountryPanel();
+        }
+
+        function updateOtherPlayersList(players) {
+            var container = document.getElementById('otherPlayersList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                if (player.id !== gameState.playerId) {
+                    var playerDiv = document.createElement('div');
+                    playerDiv.className = 'other-player';
+                    
+                    var opponentStockReturn = ((player.country_data.stock_index - 100) / 100) * 100;
+                    var formattedStockReturn = opponentStockReturn >= 0 ? 
+                        '+' + opponentStockReturn.toFixed(1) + '%' : 
+                        opponentStockReturn.toFixed(1) + '%';
+                    
+                    playerDiv.innerHTML = 
+                        '<div class="player-name">' + player.country_flag + ' ' + player.name + '</div>' +
+                        '<div class="player-stats">' +
+                            '<div class="stat">大盤: ' + formattedStockReturn + '</div>' +
+                            '<div class="stat">GDP: ' + player.country_data.gdp_growth.toFixed(1) + '%</div>' +
+                            '<div class="stat">通膨: ' + player.country_data.inflation.toFixed(1) + '%</div>' +
+                            '<div class="stat confidential">失業: 機密</div>' +
+                            '<div class="stat confidential">信心: 機密</div>' +
+                            '<div class="stat confidential">利率: 機密</div>' +
+                        '</div>';
+                    container.appendChild(playerDiv);
+                }
+            }
+        }
+
+        function updateMyCountryPanel() {
+            if (!gameState.playerData) return;
+            
+            var data = gameState.playerData.country_data;
+            
+            var title = document.getElementById('myCountryTitle');
+            if (title) {
+                title.textContent = gameState.playerData.country_flag + ' ' + gameState.playerData.country_name + '央行';
+            }
+            
+            updateIndicator('gdpGrowth', data.gdp_growth, '%', 'gdpIndicator');
+            updateIndicator('inflation', data.inflation, '%', 'inflationIndicator');
+            updateIndicator('unemployment', data.unemployment, '%', 'unemploymentIndicator');
+            updateIndicator('confidence', data.confidence, '', 'confidenceIndicator');
+            updateIndicator('deficit', data.fiscal_deficit, '%', 'deficitIndicator');
+            
+            var stockReturn = ((data.stock_index - 100) / 100) * 100;
+            updateStockIndicator('stockIndex', stockReturn, '%', 'stockIndicator');
+            
+            updateSliderSafely('interestRateSlider', 'interestRateValue', data.interest_rate, '%');
+            updateSliderSafely('reserveRatioSlider', 'reserveRatioValue', data.reserve_ratio, '%');
+            
+            updateActiveSkillPanel();
+        }
+
+        function updateIndicator(elementId, value, suffix, containerId) {
+            var element = document.getElementById(elementId);
+            var container = document.getElementById(containerId);
+            
+            if (element) {
+                if (typeof value === 'number') {
+                    element.textContent = value.toFixed(1) + suffix;
+                } else {
+                    element.textContent = value + suffix;
+                }
+            }
+            
+            if (container) {
+                container.classList.remove('positive', 'negative');
+                if (typeof value === 'number') {
+                    if (elementId === 'gdpGrowth' || elementId === 'confidence') {
+                        if (value > 0) {
+                            container.classList.add('positive');
+                        } else if (value < 0) {
+                            container.classList.add('negative');
+                        }
+                    } else if (elementId === 'inflation' || elementId === 'unemployment') {
+                        if (value > 3) {
+                            container.classList.add('negative');
+                        } else if (value < 2) {
+                            container.classList.add('positive');
+                        }
+                    } else if (elementId === 'deficit') {
+                        if (value > 0) {
+                            container.classList.add('negative'); // 赤字是負面的
+                        } else {
+                            container.classList.add('positive'); // 盈餘是正面的
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateStockIndicator(elementId, value, suffix, containerId) {
+            var element = document.getElementById(elementId);
+            var container = document.getElementById(containerId);
+            
+            if (element) {
+                var formattedValue = value >= 0 ? '+' + value.toFixed(1) : value.toFixed(1);
+                element.textContent = formattedValue + suffix;
+            }
+            
+            if (container) {
+                container.classList.remove('positive', 'negative', 'neutral');
+                
+                if (value > 2) {
+                    container.classList.add('positive');
+                } else if (value < -2) {
+                    container.classList.add('negative');
+                } else {
+                    container.classList.add('neutral');
+                }
+            }
+        }
+
+        function updateSliderSafely(sliderId, valueId, newValue, suffix) {
+            var slider = document.getElementById(sliderId);
+            var valueDisplay = document.getElementById(valueId);
+            
+            if (!slider || !valueDisplay) return;
+            
+            // 檢查滑桿是否正在被用戶操作
+            if (slider.dataset.userInteracting === 'true') {
+                console.log('🎛️ 滑桿正在被用戶操作，跳過自動更新:', sliderId);
+                return;
+            }
+            
+            // 安全更新滑桿
+            var currentValue = parseFloat(slider.value);
+            var difference = Math.abs(currentValue - newValue);
+            
+            // 只有在差異較大時才更新，避免頻繁回彈
+            if (difference > 0.5) {
+                slider.value = newValue;
+                valueDisplay.textContent = newValue.toFixed(sliderId === 'reserveRatioSlider' ? 1 : 2) + suffix;
+                console.log('🔄 同步滑桿:', sliderId, '新值:', newValue);
+            }
+        }
+
+        function setupCountrySpecificPanels() {
+            var countryCode = gameState.playerData ? gameState.playerData.country_code : null;
+            updateActiveSkillPanel();
+        }
+
+        function updateActiveSkillPanel() {
+            var countryCode = gameState.playerData ? gameState.playerData.country_code : null;
+            var skillTitle = document.getElementById('skillTitle');
+            var skillDescription = document.getElementById('skillDescription');
+            var saudiOilControls = document.getElementById('saudiOilControls'); // ✅ 修復：正確獲取元素
+            
+            var skillConfig = {
+                'USA': {
+                    title: '⚔️ 發動貿易戰爭',
+                    description: '對目標國家發動貿易戰，造成重大經濟損失，但有35%機率反噬自身'
+                },
+                'CHN': {
+                    title: '🚀 人多好辦事',
+                    description: '集中力量辦大事，實現重大科技突破，大幅提升GDP成長和民眾信心，無明顯副作用'
+                },
+                'JPN': {
+                    title: '🎯 改善老人就業問題',
+                    description: '透過數位化培訓和彈性工作制度，提升高齡勞動參與率，解決通縮和信心問題'
+                },
+                'TWN': {
+                    title: '🎲 夾縫中求生存',
+                    description: '選擇搭乘某國經濟順風車，若該國表現良好則獲得額外收益，體現小國靈活外交'
+                },
+                'BRA': {
+                    title: '⚖️ 反貪腐行動',
+                    description: '發動大規模反貪腐運動，大幅提升政府效能和民眾信心，改善財政狀況'
+                },
+                'SAU': {
+                    title: '🏭 產業轉型',
+                    description: '推進經濟多元化，逐步降低石油依賴度，建立可持續發展的經濟結構'
+                }
+            };
+            
+            var config = skillConfig[countryCode];
+            if (config) {
+                if (skillTitle) skillTitle.textContent = config.title;
+                if (skillDescription) skillDescription.textContent = config.description;
+            }
+            
+            // ✅ 顯示或隱藏沙烏地石油控制按鈕
+            if (saudiOilControls) {
+                if (countryCode === 'SAU') {
+                    saudiOilControls.style.display = 'block';
+                } else {
+                    saudiOilControls.style.display = 'none';
+                }
+            }
+
+            console.log('✅ 主動技能面板已更新為:', countryCode, config ? config.title : '未知');
+        }
+
+        function updateTimeDisplay(progress, remainingTime) {
+            var progressFill = document.getElementById('progressFill');
+            var timeRemaining = document.getElementById('timeRemaining');
+            
+            if (progressFill) {
+                var percentage = Math.min(progress * 100, 100);
+                progressFill.style.width = percentage + '%';
+                
+                if (remainingTime <= 5) {
+                    progressFill.style.backgroundColor = '#e74c3c';
+                } else if (remainingTime <= 10) {
+                    progressFill.style.backgroundColor = '#f39c12';
+                } else {
+                    progressFill.style.backgroundColor = '#3498db';
+                }
+            }
+            
+            if (timeRemaining) {
+                var minutes = Math.floor(remainingTime / 60);
+                var seconds = Math.floor(remainingTime % 60);
+                timeRemaining.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+                
+                if (remainingTime <= 5) {
+                    timeRemaining.style.color = '#e74c3c';
+                    timeRemaining.style.fontWeight = 'bold';
+                } else {
+                    timeRemaining.style.color = '';
+                    timeRemaining.style.fontWeight = '';
+                }
+            }
+        }
+
+        function updateQuarter(quarter) {
+            var element = document.getElementById('currentQuarter');
+            if (element) {
+                element.textContent = quarter;
+            }
+        }
+
+        function updateGlobalOilPrice(price) {
+            var element = document.getElementById('globalOilPrice');
+            if (element) {
+                element.textContent = '$' + price.toFixed(1);
+            }
+        }
+
+        function updateGameLog(logs) {
+            var container = document.getElementById('gameLogContainer');
+            if (!container) return;
+            
+            var wasAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
+            
+            container.innerHTML = '';
+            
+            // 顯示最新的 10 條紀錄，而不是只有 3 條
+            var displayLogs = logs.slice(-10);
+            
+            for (var i = 0; i < displayLogs.length; i++) {
+                var log = displayLogs[i];
+                var logDiv = document.createElement('div');
+                logDiv.className = 'log-entry';
+                
+                // 添加時間戳顯示
+                var timeStamp = '';
+                if (log.timestamp) {
+                    var date = new Date(log.timestamp * 1000);
+                    timeStamp = date.toLocaleTimeString('zh-TW', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    timeStamp = ' [' + timeStamp + ']';
+                }
+                
+                logDiv.innerHTML = '<strong>Q' + log.quarter + '</strong>' + timeStamp + ' ' + log.message;
+                container.appendChild(logDiv);
+            }
+            
+            // 如果用戶在底部，自動滾動
+            if (wasAtBottom) {
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            console.log('📰 遊戲日誌已更新，顯示', displayLogs.length, '條紀錄');
+        }
+
+        function updatePolicyCooldowns(cooldownStatus) {
+            gameState.policyCooldowns = cooldownStatus;
+            
+            var globalCooldown = cooldownStatus.global_policy_cooldown || 0;
+            var activeSkillCooldown = cooldownStatus.active_skill || 0;
+            
+            updateActiveSkillCooldown(activeSkillCooldown);
+            
+            var policyButtons = [
+                { btnId: 'interestRateBtn', cooldownId: 'interestRateCooldown', progressId: 'interestRateProgress' },
+                { btnId: 'reserveRatioBtn', cooldownId: 'reserveRatioCooldown', progressId: 'reserveRatioProgress' },
+                { btnId: 'increaseSpendingBtn', cooldownId: 'increaseSpendingCooldown', progressId: 'increaseSpendingProgress' },
+                { btnId: 'decreaseSpendingBtn', cooldownId: 'decreaseSpendingCooldown', progressId: 'decreaseSpendingProgress' },
+                { btnId: 'qeBtn', cooldownId: 'qeCooldown', progressId: 'qeProgress' },
+                { btnId: 'qtBtn', cooldownId: 'qtCooldown', progressId: 'qtProgress' },
+                { btnId: 'cashDistributionBtn', cooldownId: 'cashDistributionCooldown', progressId: 'cashDistributionProgress' },
+                // 🆕 添加石油控制按鈕
+                { btnId: 'increaseOilBtn', cooldownId: 'increaseOilCooldown', progressId: 'increaseOilProgress' },
+                { btnId: 'decreaseOilBtn', cooldownId: 'decreaseOilCooldown', progressId: 'decreaseOilProgress' }
+            ];
+            
+            policyButtons.forEach(function(config) {
+                updateButtonCooldown(config.btnId, config.cooldownId, config.progressId, globalCooldown, 10);
+            });
+        }
+
+        function updateActiveSkillCooldown(remaining) {
+            var btn = document.getElementById('activeSkillBtn');
+            var cooldownOverlay = document.getElementById('activeSkillCooldown');
+            var progressBar = document.getElementById('activeSkillProgress');
+            
+            if (!btn || !cooldownOverlay || !progressBar) return;
+            
+            if (remaining > 0) {
+                btn.disabled = true;
+                btn.classList.add('btn-cooldown');
+                
+                cooldownOverlay.textContent = remaining + '季';
+                cooldownOverlay.style.width = '100%';
+                progressBar.style.width = '100%';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('btn-cooldown');
+                cooldownOverlay.style.width = '0%';
+                progressBar.style.width = '0%';
+                cooldownOverlay.textContent = '';
+            }
+        }
+
+        function updateButtonCooldown(btnId, cooldownId, progressId, remaining, maxCooldown) {
+            var btn = document.getElementById(btnId);
+            var cooldownOverlay = document.getElementById(cooldownId);
+            var progressBar = document.getElementById(progressId);
+            
+            if (!btn || !cooldownOverlay || !progressBar) return;
+            
+            if (remaining > 0) {
+                btn.disabled = true;
+                btn.classList.add('btn-cooldown');
+                
+                var seconds = Math.ceil(remaining);
+                cooldownOverlay.textContent = seconds + 's';
+                cooldownOverlay.style.width = '100%';
+                progressBar.style.width = '100%';
+                
+                if (maxCooldown > 0) {
+                    var percentage = (remaining / maxCooldown) * 100;
+                    cooldownOverlay.style.width = percentage + '%';
+                    progressBar.style.width = percentage + '%';
+                }
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('btn-cooldown');
+                cooldownOverlay.style.width = '0%';
+                progressBar.style.width = '0%';
+                cooldownOverlay.textContent = '';
+            }
+        }
+
+        // ===== 8. 設置按鈕事件監聽器 =====
+        function setupPolicyButtons() {
+            // 利率政策
+            var interestRateBtn = document.getElementById('interestRateBtn');
+            if (interestRateBtn) {
+                interestRateBtn.addEventListener('click', function() {
+                    var slider = document.getElementById('interestRateSlider');
+                    if (slider) {
+                        var rate = parseFloat(slider.value);
+                        console.log('💰 執行利率政策，數值:', rate);
+                        executePolicy('interest_rate', { value: rate });
+                    }
+                });
+            }
+
+            // 存款準備金率
+            var reserveRatioBtn = document.getElementById('reserveRatioBtn');
+            if (reserveRatioBtn) {
+                reserveRatioBtn.addEventListener('click', function() {
+                    var slider = document.getElementById('reserveRatioSlider');
+                    if (slider) {
+                        var ratio = parseFloat(slider.value);
+                        console.log('🏦 執行準備金率政策，數值:', ratio);
+                        executePolicy('reserve_ratio', { value: ratio });
+                    }
+                });
+            }
+
+            // 財政政策按鈕
+            var increaseSpendingBtn = document.getElementById('increaseSpendingBtn');
+            if (increaseSpendingBtn) {
+                increaseSpendingBtn.addEventListener('click', function() {
+                    executePolicy('fiscal_policy', { policy_type: 'increase_spending' });
+                });
+            }
+
+            var decreaseSpendingBtn = document.getElementById('decreaseSpendingBtn');
+            if (decreaseSpendingBtn) {
+                decreaseSpendingBtn.addEventListener('click', function() {
+                    executePolicy('fiscal_policy', { policy_type: 'decrease_spending' });
+                });
+            }
+
+            // 量化寬鬆政策按鈕
+            var qeBtn = document.getElementById('qeBtn');
+            if (qeBtn) {
+                qeBtn.addEventListener('click', function() {
+                    executePolicy('quantitative_easing', { direction: 'easing' });
+                });
+            }
+
+            var qtBtn = document.getElementById('qtBtn');
+            if (qtBtn) {
+                qtBtn.addEventListener('click', function() {
+                    executePolicy('quantitative_easing', { direction: 'tightening' });
+                });
+            }
+
+            // 普發現金
+            var cashDistributionBtn = document.getElementById('cashDistributionBtn');
+            if (cashDistributionBtn) {
+                cashDistributionBtn.addEventListener('click', function() {
+                    executePolicy('cash_distribution');
+                });
+            }
+
+            // 主動技能按鈕
+            var activeSkillBtn = document.getElementById('activeSkillBtn');
+            if (activeSkillBtn) {
+                activeSkillBtn.addEventListener('click', function() {
+                    handleActiveSkillClick();
+                });
+            }
+
+            // 🆕 沙烏地石油控制按鈕
+            var increaseOilBtn = document.getElementById('increaseOilBtn');
+            if (increaseOilBtn) {
+                increaseOilBtn.addEventListener('click', function() {
+                    executePolicy('oil_control', { direction: 'increase' });
+                });
+            }
+
+            var decreaseOilBtn = document.getElementById('decreaseOilBtn');
+            if (decreaseOilBtn) {
+                decreaseOilBtn.addEventListener('click', function() {
+                    executePolicy('oil_control', { direction: 'decrease' });
+                });
+            }            
+
+            // 設置滑桿即時更新
+            setupSliders();
+        }
+
+        function setupSliders() {
+            console.log('🎛️ 設置滑桿事件監聽器');
+            
+            function setupSlider(sliderId, valueId, decimals, suffix) {
+                var slider = document.getElementById(sliderId);
+                var valueDisplay = document.getElementById(valueId);
+                
+                if (slider && valueDisplay) {
+                    // 標記用戶開始操作
+                    slider.addEventListener('mousedown', function() {
+                        slider.dataset.userInteracting = 'true';
+                    });
+                    
+                    slider.addEventListener('touchstart', function() {
+                        slider.dataset.userInteracting = 'true';
+                    });
+                    
+                    // 標記用戶結束操作
+                    slider.addEventListener('mouseup', function() {
+                        setTimeout(function() {
+                            slider.dataset.userInteracting = 'false';
+                        }, 1000); // 1秒後允許自動更新
+                    });
+                    
+                    slider.addEventListener('touchend', function() {
+                        setTimeout(function() {
+                            slider.dataset.userInteracting = 'false';
+                        }, 1000);
+                    });
+                    
+                    // 即時更新顯示值
+                    slider.addEventListener('input', function(e) {
+                        var value = parseFloat(e.target.value);
+                        valueDisplay.textContent = value.toFixed(decimals) + suffix;
+                        console.log('📊 滑桿調整:', sliderId, value + suffix);
+                    });
+                }
+            }
+            
+            // 設置利率滑桿（2位小數）
+            setupSlider('interestRateSlider', 'interestRateValue', 2, '%');
+            
+            // 設置準備金率滑桿（1位小數）
+            setupSlider('reserveRatioSlider', 'reserveRatioValue', 1, '%');
+            
+            console.log('✅ 滑桿事件監聽器設置完成');
+        }
+
+        function handleActiveSkillClick() {
+            var countryCode = gameState.playerData ? gameState.playerData.country_code : null;
+            
+            switch (countryCode) {
+                case 'USA':
+                    handleUSATradeWar();
+                    break;
+                case 'CHN':
+                    executePolicy('china_mass_mobilization');
+                    break;
+                case 'JPN':
+                    executePolicy('japan_aging_solution');
+                    break;
+                case 'TWN':
+                    handleTaiwanBet();
+                    break;
+                case 'BRA':
+                    executePolicy('brazil_anticorruption');
+                    break;
+                case 'SAU':
+                    executePolicy('saudi_transformation');
+                    break;
+                default:
+                    showError('未知的國家代碼');
+            }
+        }
+
+        function handleUSATradeWar() {
+            var otherCountries = [];
+            for (var playerId in gameState.allPlayers) {
+                var player = gameState.allPlayers[playerId];
+                if (player.country_code !== 'USA') {
+                    otherCountries.push({
+                        code: player.country_code,
+                        name: player.country_name,
+                        flag: player.country_flag
+                    });
+                }
+            }
+            
+            if (otherCountries.length === 0) {
+                showError('沒有可以發動貿易戰爭的目標國家');
+                return;
+            }
+            
+            createCountryDropdown(otherCountries, '🚨 選擇貿易戰爭目標國家').then(function(target) {
+                if (target) {
+                    executePolicy('usa_trade_war', { target_country: target });
+                }
+            });
+        }
+
+        function handleTaiwanBet() {
+            var otherCountries = [];
+            for (var playerId in gameState.allPlayers) {
+                var player = gameState.allPlayers[playerId];
+                if (player.country_code !== 'TWN') {
+                    otherCountries.push({
+                        code: player.country_code,
+                        name: player.country_name,
+                        flag: player.country_flag
+                    });
+                }
+            }
+            
+            if (otherCountries.length === 0) {
+                showError('沒有可以搭順風車的國家');
+                return;
+            }
+            
+            createCountryDropdown(otherCountries, '🎲 選擇要搭順風車的國家').then(function(target) {
+                if (target) {
+                    executePolicy('taiwan_bet', { target_country: target });
+                }
+            });
+        }
+
+        function createCountryDropdown(countries, title) {
+            return new Promise(function(resolve) {
+                // 創建模態對話框
+                var modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                `;
+                
+                var dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: white;
+                    border-radius: 15px;
+                    padding: 30px;
+                    max-width: 400px;
+                    width: 90%;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                `;
+                
+                dialog.innerHTML = `
+                    <h3 style="margin-bottom: 20px; color: #2c3e50; text-align: center;">${title}</h3>
+                    <select id="countrySelect" style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 2px solid #3498db;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        margin-bottom: 20px;
+                        background: white;
+                    ">
+                        <option value="">請選擇國家...</option>
+                        ${countries.map(country => 
+                            `<option value="${country.code}">${country.flag} ${country.name}</option>`
+                        ).join('')}
+                    </select>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="confirmBtn" style="
+                            padding: 10px 20px;
+                            background: #27ae60;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">確認</button>
+                        <button id="cancelBtn" style="
+                            padding: 10px 20px;
+                            background: #95a5a6;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">取消</button>
+                    </div>
+                `;
+                
+                modal.appendChild(dialog);
+                document.body.appendChild(modal);
+                
+                var select = dialog.querySelector('#countrySelect');
+                var confirmBtn = dialog.querySelector('#confirmBtn');
+                var cancelBtn = dialog.querySelector('#cancelBtn');
+                
+                confirmBtn.addEventListener('click', function() {
+                    var selectedValue = select.value;
+                    document.body.removeChild(modal);
+                    resolve(selectedValue || null);
+                });
+                
+                cancelBtn.addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                    resolve(null);
+                });
+                
+                // ESC 鍵關閉
+                modal.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        document.body.removeChild(modal);
+                        resolve(null);
+                    }
+                });
+                
+                // 聚焦到選擇框
+                setTimeout(function() {
+                    select.focus();
+                }, 100);
+            });
+        }
+
+        // ===== 9. 提示和反饋系統 =====
+        function showQuarterTransition(quarter) {
+            var alerts = document.getElementById('economicAlerts');
+            var transitionDiv = document.createElement('div');
+            transitionDiv.className = 'prosperity-notice';
+            transitionDiv.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            transitionDiv.innerHTML = '📅 第 ' + quarter + ' 季開始！經濟指標已更新';
+            alerts.appendChild(transitionDiv);
+            
+            setTimeout(function() {
+                if (transitionDiv.parentNode) {
+                    transitionDiv.parentNode.removeChild(transitionDiv);
+                }
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            var alerts = document.getElementById('economicAlerts');
+            var successDiv = document.createElement('div');
+            successDiv.className = 'prosperity-notice success-notice';
+            successDiv.innerHTML = '✅ ' + message;
+            alerts.appendChild(successDiv);
+            
+            setTimeout(function() {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        function showError(message) {
+            var alerts = document.getElementById('economicAlerts');
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'prosperity-notice error-notice';
+            errorDiv.innerHTML = '❌ ' + message;
+            alerts.appendChild(errorDiv);
+            
+            setTimeout(function() {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        // ===== 10. 初始化程序 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 遊戲初始化開始');
+            
+            // 創建快訊系統實例
+            window.NewsAlertSystem = NewsAlertSystem;
+            window.newsAlertSystem = new NewsAlertSystem();
+            
+            // 初始化Socket連接
+            initializeSocket();
+            
+            // 設置政策按鈕事件
+            setupPolicyButtons();
+            
+            // 設置國家選擇事件
+            setupCountrySelection();
+            
+            console.log('✅ 遊戲初始化完成，等待用戶操作');
+            
+            // 測試快訊系統
+            setTimeout(function() {
+                if (window.newsAlertSystem && window.newsAlertSystem.isReady) {
+                    window.newsAlertSystem.showAlert({
+                        type: 'global',
+                        category: 'good',
+                        name: '🎮 央行模擬器啟動',
+                        description: '歡迎來到全球央行模擬器！快訊系統已成功載入。',
+                        effects: {},
+                        season: 1
+                    });
+                    console.log('✅ 測試快訊顯示成功');
+                } else {
+                    console.warn('⚠️ 快訊系統初始化未完成');
+                }
+            }, 2000);
+        });
+        // ===== 11. 除錯工具（整合版本，取代原有的重複部分）=====
+
+        window.debugTools = {
+            // 檢查系統狀態
+            checkSystem: function() {
+                console.log('=== 🔍 系統狀態檢查 ===');
+                console.log('Socket 連接:', socket && socket.connected ? '✅ 已連接' : '❌ 未連接');
+                console.log('快訊系統:', window.newsAlertSystem && window.newsAlertSystem.isReady ? '✅ 就緒' : '❌ 未就緒');
+                console.log('遊戲狀態:', gameState.gameId ? '✅ 遊戲中' : '❌ 未開始');
+                console.log('玩家ID:', gameState.playerId || '未設定');
+                console.log('選擇國家:', gameState.selectedCountry || '未選擇');
+                
+                if (gameState.gameId) {
+                    console.log('房間代碼:', gameState.gameId);
+                    console.log('當前季度:', document.getElementById('currentQuarter')?.textContent || '未知');
+                    console.log('玩家數據:', gameState.playerData ? '✅ 已載入' : '❌ 未載入');
+                }
+                
+                return {
+                    socket: socket && socket.connected,
+                    newsSystem: window.newsAlertSystem && window.newsAlertSystem.isReady,
+                    inGame: !!gameState.gameId,
+                    playerData: !!gameState.playerData
+                };
+            },
+
+            // 模擬各種事件
+            simulateEvent: function(type = 'global') {
+                if (!window.newsAlertSystem || !window.newsAlertSystem.isReady) {
+                    console.error('❌ 快訊系統不可用');
+                    return false;
+                }
+
+                var events = {
+                    global_good: {
+                        type: 'global',
+                        category: 'good',
+                        name: '🌍 全球經濟復甦',
+                        description: '各國經濟政策協調有效，全球經濟展現強勁復甦動能',
+                        effects: { gdp: 1.5, confidence: 15, inflation: -0.5 },
+                        season: 3
+                    },
+                    global_bad: {
+                        type: 'global',
+                        category: 'bad',
+                        name: '🌍 全球貿易戰爭',
+                        description: '主要經濟體貿易摩擦加劇，全球供應鏈受到嚴重衝擊',
+                        effects: { gdp: -2.0, confidence: -20, inflation: 1.5 },
+                        season: 3
+                    },
+                    country: {
+                        type: 'country',
+                        country: gameState.playerData?.country_name || '美國',
+                        category: 'good',
+                        name: '🏳️ 政策改革成功',
+                        description: '重大經濟改革取得顯著成效，國際評級機構上調信用評級',
+                        effects: { gdp: 1.8, confidence: 12, deficit: -1.0 },
+                        season: 3
+                    }
+                };
+
+                var eventToShow;
+                switch(type) {
+                    case 'global_good':
+                        eventToShow = events.global_good;
+                        break;
+                    case 'global_bad':
+                        eventToShow = events.global_bad;
+                        break;
+                    case 'country':
+                        eventToShow = events.country;
+                        break;
+                    default:
+                        eventToShow = events.global_good;
+                }
+
+                console.log('🎮 模擬事件:', eventToShow.name);
+                window.newsAlertSystem.showAlert(eventToShow);
+                return true;
+            },
+
+            // 強制刷新遊戲狀態
+            forceRefresh: function() {
+                console.log('🔄 強制刷新遊戲狀態...');
+                if (gameState.playerData) {
+                    updateMyCountryPanel();
+                    updateActiveSkillPanel();
+                    console.log('✅ 刷新完成');
+                } else {
+                    console.warn('⚠️ 無玩家數據可刷新');
+                }
+            },
+
+            // 測試冷卻系統
+            testCooldowns: function() {
+                console.log('🧪 測試冷卻系統...');
+                var testCooldowns = {
+                    global_policy_cooldown: 5,
+                    active_skill: 2
+                };
+                updatePolicyCooldowns(testCooldowns);
+                console.log('✅ 冷卻測試完成，5秒後自動重置');
+                setTimeout(function() {
+                    updatePolicyCooldowns({ global_policy_cooldown: 0, active_skill: 0 });
+                    console.log('🔄 冷卻系統已重置');
+                }, 5000);
+            }
+        };
+
+        // 為了向後相容，保留一些舊的函數名
+        window.checkEventSystem = window.debugTools.checkSystem;
+        window.debugGameState = window.debugTools.checkSystem;
+        window.simulateGameEvent = function() { return window.debugTools.simulateEvent('global_good'); };
+        window.testNewsAlert = function() { return window.debugTools.simulateEvent('country'); };
+
+        // 只保留一次載入完成訊息
+        console.log('🎯 央行模擬器載入完成！');
+        console.log('💡 除錯指令：');
+        console.log('  - debugTools.checkSystem() 檢查系統狀態');
+        console.log('  - debugTools.simulateEvent("global_good") 模擬全球好事件');
+        console.log('  - debugTools.simulateEvent("global_bad") 模擬全球壞事件');
+        console.log('  - debugTools.simulateEvent("country") 模擬國家事件');
+        console.log('  - debugTools.forceRefresh() 強制刷新界面');
+        console.log('  - debugTools.testCooldowns() 測試冷卻系統');
+        console.log('🚀 開始您的央行行長之旅！');
+
+    </script>
+</body>
+</html>
