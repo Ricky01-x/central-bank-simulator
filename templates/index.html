@@ -606,6 +606,148 @@
                 flex-direction: column;
             }
         }
+
+       /* 評分面板樣式 */
+        .scoring-panel {
+            position: fixed;
+            top: 10%;
+            right: 20px;
+            width: 400px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .scoring-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .standing-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .standing-item:hover {
+            background-color: #e9ecef !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .ranking {
+            display: flex;
+            align-items: center;
+            min-width: 60px;
+        }
+
+        .rank {
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        .grade {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .grade-S { background: #ffd700; color: #000; }
+        .grade-A { background: #c0c0c0; color: #000; }
+        .grade-B { background: #cd7f32; color: #fff; }
+        .grade-C { background: #4CAF50; color: #fff; }
+        .grade-D { background: #ff9800; color: #fff; }
+        .grade-F { background: #f44336; color: #fff; }
+
+        .player-info {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .player-info .flag {
+            font-size: 20px;
+        }
+        
+        .player-info .name {
+            font-weight: bold;
+        }
+        
+        .player-info .country {
+            color: #6c757d;
+        }
+
+        .score {
+            text-align: right;
+            font-weight: bold;
+            font-size: 16px;
+            color: #007bff;
+        }
+        .score-breakdown {
+            padding: 15px;
+        }
+
+        .score-section {
+            margin-bottom: 15px;
+        }
+
+        .score-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .final-results-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            min-width: 500px;
+            max-width: 90vw;
+        }
+
+        .final-ranking.winner {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            padding: 10px;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -902,6 +1044,32 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- 評分面板 -->
+        <div class="scoring-panel" id="scoringPanel" style="display: none;">
+            <div class="scoring-header">
+                <h3>🏆 評分排行榜</h3>
+                <button onclick="toggleScoringPanel()" class="btn btn-secondary">關閉</button>
+            </div>
+            
+            <div class="standings-container">
+                <div class="standings-list" id="standingsList">
+                    <!-- 排名將在這裡動態生成 -->
+                </div>
+            </div>
+            
+            <div class="scoring-details" id="scoringDetails">
+                <!-- 詳細評分將在這裡顯示 -->
+            </div>
+        </div>
+
+        <!-- 在控制面板的最後加入評分按鈕 -->
+        <div class="tool-group" style="border-left: 4px solid #f39c12;">
+            <h3>📊 遊戲統計</h3>
+            <button onclick="showCurrentStandings()" class="btn btn-warning" style="width: 100%;">
+                🏆 查看當前排名
+            </button>
         </div>
     </div>
 
@@ -1239,6 +1407,22 @@
 
             socket.on('error', function(data) {
                 showError(data.message);
+            });
+
+                // 🔥 在這裡添加評分系統監聽器
+            socket.on('standings_update', function(data) {
+                console.log('📈 收到排名更新:', data);
+                updateStandingsDisplay(data.standings, data.quarter);
+            });
+
+            socket.on('game_ended', function(data) {
+                console.log('🏁 遊戲結束:', data);
+                showFinalResults(data.final_scores);
+            });
+
+            socket.on('game_duration_set', function(data) {
+                console.log('⏱️ 遊戲時長設定為:', data.quarters + '季');
+                showSuccess(`遊戲時長設定為 ${data.quarters} 季`);
             });
         }
 
@@ -2380,6 +2564,202 @@
         console.log('  - debugTools.testCooldowns() 測試冷卻系統');
         console.log('🚀 開始您的央行行長之旅！');
 
+        // 評分系統相關函數
+        function showCurrentStandings() {
+            console.log('📊 請求當前排名');
+            socket.emit('request_standings');
+            document.getElementById('scoringPanel').style.display = 'block';
+        }
+
+        function toggleScoringPanel() {
+            const panel = document.getElementById('scoringPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function setGameDuration() {
+            const duration = document.getElementById('gameDuration').value;
+            socket.emit('set_game_duration', { quarters: parseInt(duration) });
+        }
+
+        function updateStandingsDisplay(standings, quarter) {
+            const standingsList = document.getElementById('standingsList');
+            if (!standingsList) {
+                console.error('❌ 找不到排名列表容器');
+                return;
+            }
+            
+            standingsList.innerHTML = '';
+            
+            if (!standings || standings.length === 0) {
+                standingsList.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">暫無評分數據</div>';
+                return;
+            }
+            
+            standings.forEach((player, index) => {
+                const standingItem = document.createElement('div');
+                standingItem.className = 'standing-item';
+                standingItem.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    border-left: 4px solid #007bff;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                `;
+                
+                // 設置評級顏色
+                const gradeColors = {
+                    'S': '#ffd700',
+                    'A': '#c0c0c0', 
+                    'B': '#cd7f32',
+                    'C': '#4CAF50',
+                    'D': '#ff9800',
+                    'F': '#f44336'
+                };
+                const gradeTextColors = {
+                    'S': '#000', 'A': '#000', 'B': '#fff',
+                    'C': '#fff', 'D': '#fff', 'F': '#fff'
+                };
+                
+                standingItem.innerHTML = `
+                    <div class="ranking">
+                        <span class="rank">#${index + 1}</span>
+                        <span class="grade grade-${player.grade}" style="
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            margin-left: 8px;
+                            background: ${gradeColors[player.grade] || '#6c757d'};
+                            color: ${gradeTextColors[player.grade] || '#fff'};
+                        ">${player.grade}</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="flag">${player.country_flag || '🏳️'}</span>
+                        <span class="name">${player.player_name || '未知玩家'}</span>
+                        <span class="country">${player.country_name || '未知國家'}</span>
+                    </div>
+                    <div class="score">
+                        <span class="total-score">${(player.total_score || 0).toFixed(1)}</span>
+                        <span class="score-label">分</span>
+                        <div style="font-size: 12px; color: #6c757d;">第${quarter}季</div>
+                    </div>
+                `;
+                
+                // 添加hover效果
+                standingItem.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#e9ecef';
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                standingItem.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                    this.style.transform = 'translateY(0)';
+                });
+                
+                // 點擊顯示詳細評分
+                standingItem.addEventListener('click', () => {
+                    showScoreDetails(player);
+                });
+                
+                standingsList.appendChild(standingItem);
+            });
+            
+            console.log('✅ 排名顯示更新完成');
+        }
+
+
+        function showScoreDetails(player) {
+            const details = player.details || {};
+            const detailsContainer = document.getElementById('scoringDetails');
+            
+            if (!detailsContainer) {
+                console.error('❌ 找不到評分詳情容器');
+                return;
+            }
+            
+            detailsContainer.innerHTML = `
+                <div style="padding: 20px; background: white; border-radius: 8px; margin-top: 15px; border: 1px solid #dee2e6;">
+                    <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center;">
+                        <span style="font-size: 24px; margin-right: 10px;">${player.country_flag || '🏳️'}</span>
+                        ${player.player_name || '未知玩家'} 詳細評分
+                    </h4>
+                    <div class="score-breakdown">
+                        <div class="score-section" style="margin-bottom: 15px;">
+                            <h5 style="color: #007bff; margin-bottom: 10px;">📊 共通指標 (490分)</h5>
+                            <div class="score-item">GDP成長率: ${(details.gdp_growth || 0).toFixed(1)}/98分</div>
+                            <div class="score-item">通膨率: ${(details.inflation || 0).toFixed(1)}/98分</div>
+                            <div class="score-item">失業率: ${(details.unemployment || 0).toFixed(1)}/74分</div>
+                            <div class="score-item">民眾信心: ${(details.confidence || 0).toFixed(1)}/74分</div>
+                            <div class="score-item">金融穩定: ${(details.financial_stability || 0).toFixed(1)}/49分</div>
+                            <div class="score-item">財政狀況: ${(details.fiscal_deficit || 0).toFixed(1)}/49分</div>
+                            <div class="score-item">CPI穩定: ${(details.cpi_stability || 0).toFixed(1)}/49分</div>
+                        </div>
+                        <div class="score-section" style="margin-bottom: 15px;">
+                            <h5 style="color: #ffc107; margin-bottom: 10px;">🌟 國家特色 (210分)</h5>
+                            <div class="score-item">特色加分: ${(details.country_bonus || 0).toFixed(1)}/210分</div>
+                        </div>
+                        <div class="score-section" style="margin-bottom: 15px;">
+                            <h5 style="color: #28a745; margin-bottom: 10px;">🏅 相對表現獎勵</h5>
+                            <div class="score-item">相對獎勵: +${(details.relative_bonus || 0).toFixed(1)}分</div>
+                        </div>
+                        <div class="total-section" style="padding: 15px; background: #f8f9fa; border-radius: 6px; text-align: center; border: 2px solid #007bff;">
+                            <strong style="font-size: 18px; color: #007bff;">
+                                總分: ${(player.total_score || 0).toFixed(1)}/700分 (${player.grade || 'F'}級)
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            console.log('✅ 詳細評分顯示完成');
+        }
+
+        function showFinalResults(finalScores) {
+            // 創建最終結果彈窗
+            const modal = document.createElement('div');
+            modal.className = 'final-results-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>🏆 最終評分結果</h2>
+                    <div class="final-standings">
+                        ${finalScores.map((player, index) => `
+                            <div class="final-ranking ${index === 0 ? 'winner' : ''}">
+                                <span class="position">${index + 1}</span>
+                                <span class="flag">${player.country_flag}</span>
+                                <span class="name">${player.player_name}</span>
+                                <span class="score">${player.total_score.toFixed(1)}分</span>
+                                <span class="grade grade-${player.grade}">${player.grade}級</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-actions">
+                        <button onclick="closeModal(this)" class="btn btn-primary">關閉</button>
+                        <button onclick="location.reload()" class="btn btn-success">重新開始</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function closeModal(button) {
+            const modal = button.closest('.final-results-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+
+        // 在現有的初始化函數中確保評分按鈕可用
+        document.addEventListener('DOMContentLoaded', function() {
+            // 現有的初始化代碼...
+            
+            // 確保評分按鈕在遊戲開始後可見
+            console.log('🎯 評分系統初始化完成');
+        });
     </script>
 </body>
 </html>

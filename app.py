@@ -8,6 +8,7 @@ import uuid
 import random
 import json
 import os
+from scoring import scoring_system
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -36,6 +37,9 @@ class GameState:
             'global': 0.5,  # 全球事件機率（每季40%）
             'country': 0.6  # 國家事件機率（每季30%）
         }
+        self.scoring_enabled = False  # 是否啟用評分
+        self.game_duration_quarters = 17  # 預設17季
+        self.quarter_scores = {}  # 儲存每季度分數
         
     def add_player(self, player_id, player_name, country_code):
         """添加玩家到遊戲"""
@@ -94,6 +98,19 @@ class GameState:
             'china_mass_mobilization_used': False, # 中國人多好辦事是否使用過
             'japan_aging_solution_used': False, # 日本老齡就業解決方案是否使用過
             
+            # 新增：歷史數據追蹤
+            'gdp_growth_history': [],
+            'inflation_history': [],
+            'unemployment_history': [],
+            'confidence_history': [],
+            'stock_history': [],
+            'fiscal_deficit_history': [],
+            
+            # 新增：評分相關
+            'initial_fiscal_deficit': data.get('fiscal_deficit', 0),
+            'transformation_quarters': 0,  # 沙烏地轉型季數
+            'bubble_risk_level': 0,  # 泡沫風險等級
+
             'history': {
                 'quarters': [1],
                 'gdp_growth': [data['gdp_growth']],
@@ -102,6 +119,7 @@ class GameState:
                 'confidence': [data['confidence']],
                 'stock_index': [data['stock_index']]
             }
+
         })
         return data
     
@@ -337,11 +355,78 @@ class GameState:
             
         # 執行被動技能
         self.update_passive_skills()
-            
         self.add_log(f"📅 進入第{self.current_quarter}季")
         
+        # 更新歷史記錄
+        for player in self.players.values():
+            data = player['country_data']
+            
+            # 記錄當前數值到歷史
+            data['gdp_growth_history'].append(data['gdp_growth'])
+            data['inflation_history'].append(data['inflation'])
+            data['unemployment_history'].append(data['unemployment'])
+            data['confidence_history'].append(data['confidence'])
+            data['stock_history'].append(data.get('stock_index_change', 0))
+            data['fiscal_deficit_history'].append(data['fiscal_deficit'])
+            
+            # 保持歷史記錄在合理長度
+            max_history = 17  # 保留17季歷史
+            for key in ['gdp_growth_history', 'inflation_history', 
+                    'unemployment_history', 'confidence_history',
+                    'stock_history', 'fiscal_deficit_history']:
+                if len(data[key]) > max_history:
+                    data[key] = data[key][-max_history:]
+        
+        # 檢查是否遊戲結束
+        if self.current_quarter >= self.game_duration_quarters:
+            self.end_game()
+
         # 🔥 重要：確保回傳事件列表而不是布林值
         return triggered_events  # 這裡不能回傳 True
+        
+    def end_game(self):
+        """遊戲結束處理"""
+        self.game_started = False
+        self.is_paused = True
+        
+        # 計算最終評分
+        final_scores = self.calculate_final_scores()
+        
+        # 發送遊戲結束通知
+        socketio.emit('game_ended', {
+            'final_scores': final_scores,
+            'game_duration': self.current_quarter - 1
+        }, room=self.game_id)
+        
+        self.add_log("🏁 遊戲結束！評分結算完成")
+
+    def calculate_final_scores(self):
+        """計算所有玩家的最終得分"""
+        final_scores = []
+        
+        for player in self.players.values():
+            score_result = scoring_system.calculate_final_score(
+                player, self.players, self.current_quarter
+            )
+            
+            final_scores.append({
+                'player_id': player['id'],
+                'player_name': player['name'],
+                'country_name': player['country_name'],
+                'country_flag': player['country_flag'],
+                'total_score': score_result['total_score'],
+                'grade': score_result['grade'],
+                'details': score_result['details']
+            })
+        
+        # 按分數排序
+        final_scores.sort(key=lambda x: x['total_score'], reverse=True)
+        
+        return final_scores
+
+    def get_current_standings(self):
+        """獲取當前排名（用於中期預覽）"""
+        return self.calculate_final_scores()
         
     def update_global_oil_price(self):
         """更新全球石油價格"""
@@ -1210,6 +1295,52 @@ def on_policy_action(data):
         }, room=game_id)
     else:
         emit('error', {'message': message})
+
+@socketio.on('request_standings')
+def on_request_standings():
+    """處理排名查詢請求"""
+    if request.sid not in players:
+        return
+        
+    player_info = players[request.sid]
+    game_id = player_info['game_id']
+    
+    if game_id not in games:
+        return
+        
+    game = games[game_id]
+    standings = game.get_current_standings()
+    
+    emit('standings_update', {
+        'standings': standings,
+        'quarter': game.current_quarter
+    })
+
+@socketio.on('set_game_duration')
+def on_set_game_duration(data):
+    """設定遊戲持續時間"""
+    if request.sid not in players:
+        return
+        
+    player_info = players[request.sid]
+    game_id = player_info['game_id']
+    
+    if game_id not in games:
+        return
+        
+    game = games[game_id]
+    
+    # 只有房主可以設定
+    if player_info['id'] != game.host_player_id:
+        emit('error', {'message': '只有房主可以設定遊戲時長'})
+        return
+    
+    duration = data.get('quarters', 17)
+    if 8 <= duration <= 32:
+        game.game_duration_quarters = duration
+        socketio.emit('game_duration_set', {
+            'quarters': duration
+        }, room=game_id)
 
 def get_policy_name(action_type):
     """獲取政策名稱"""
