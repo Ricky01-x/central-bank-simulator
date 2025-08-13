@@ -298,6 +298,12 @@ class GameState:
                 country_data['fiscal_deficit'] += value
             elif effect_type == 'stock_index':
                 country_data['stock_index_trend'] += value
+            elif effect_type == 'global_oil_price':  # 新增這個處理
+                old_price = self.global_oil_price
+                self.global_oil_price += value
+                self.global_oil_price = max(30, min(150, self.global_oil_price))
+                direction = "上漲" if value > 0 else "下跌"
+                self.add_log(f"🛢️ 國際油價{direction}${abs(value):.1f} (${old_price:.1f}→${self.global_oil_price:.1f})")
 
     def advance_quarter(self):
         """推進到下一季度"""

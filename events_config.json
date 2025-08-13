@@ -7,7 +7,8 @@
         "effects": {
           "gdp": 1.5,
           "confidence": 15,
-          "inflation": -0.8
+          "inflation": -0.8,
+          "global_oil_price": -10
         }
       },
       {
@@ -74,7 +75,8 @@
           "gdp": -4.0,
           "confidence": -35,
           "unemployment": 2.0,
-          "deficit": 3.0
+          "deficit": 3.0,
+          "global_oil_price": -12
         }
       },
       {
@@ -84,7 +86,8 @@
           "gdp": -2.5,
           "confidence": -30,
           "inflation": 2.0,
-          "deficit": 2.5
+          "deficit": 2.5,
+          "global_oil_price": 12
         }
       },
       {
@@ -93,7 +96,8 @@
         "effects": {
           "gdp": -1.8,
           "confidence": -15,
-          "inflation": 1.2
+          "inflation": 1.2,
+          "global_oil_price": 6
         }
       },
       {
@@ -103,7 +107,8 @@
           "gdp": -2.0,
           "confidence": -20,
           "inflation": 1.5,
-          "deficit": 1.5
+          "deficit": 1.5,
+          "global_oil_price": 8
         }
       },
       {
@@ -121,7 +126,8 @@
         "effects": {
           "gdp": -2.2,
           "confidence": -22,
-          "inflation": 2.5
+          "inflation": 2.5,
+          "global_oil_price": 15
         }
       }
     ]
@@ -500,7 +506,8 @@
             "description": "發現大型頁岩油田，實現能源獨立",
             "effects": {
               "gdp": 1.8,
-              "inflation": -1.0
+              "inflation": -1.0,
+              "global_oil_price": -8
             }
           },
           {
@@ -891,7 +898,8 @@
             "effects": {
               "gdp": 2.5,
               "confidence": 15,
-              "deficit": -3.0
+              "deficit": -3.0,
+              "global_oil_price": 15
             }
           }
         ],
@@ -936,7 +944,8 @@
             "effects": {
               "gdp": -2.2,
               "confidence": -25,
-              "deficit": 2.0
+              "deficit": 2.0,
+              "global_oil_price": 14
             }
           },
           {
@@ -945,7 +954,8 @@
             "effects": {
               "gdp": -3.0,
               "confidence": -20,
-              "deficit": 4.0
+              "deficit": 4.0,
+              "global_oil_price": -15
             }
           },
           {
